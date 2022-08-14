@@ -1,16 +1,17 @@
 #include "DigitalWatch.h"
 
 DigitalWatch::DigitalWatch() {
-  uint32_t targetTime = 0;                    // for next 1 second timeout
+  targetTime = 0;                    // for next 1 second timeout
 
-  uint8_t hh = conv2d(__TIME__), mm = conv2d(__TIME__ + 3), ss = conv2d(__TIME__ + 6); // Get H, M, S from compile time
+//  hh = conv2d(__TIME__), mm = conv2d(__TIME__ + 3), ss = conv2d(__TIME__ + 6); // Get H, M, S from compile time
 
-  byte omm = 99, oss = 99;
-  byte xcolon = 0, xsecs = 0;
+  omm = 99, oss = 99;
+  xcolon = 0, xsecs = 0;
   init();
 }
 
 void DigitalWatch::init() {
+  hh = conv2d(__TIME__), mm = conv2d(__TIME__ + 3), ss = conv2d(__TIME__ + 6); // Get H, M, S from compile time
   targetTime = millis() + 1000;
 }
 
@@ -22,7 +23,7 @@ uint8_t DigitalWatch::conv2d(const char* p) {
   return 10 * v + *++p - '0';
 }
 
-void DigitalWatch::drawTime(TFT_eSPI tft) {
+void DigitalWatch::draw(TFT_eSPI tft) {
   if (targetTime < millis()) {
     // Set next update for 1 second later
     targetTime = millis() + 1000;

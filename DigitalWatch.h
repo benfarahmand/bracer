@@ -15,7 +15,7 @@ class DigitalWatch {
 
     void init();
     uint8_t conv2d(const char* p);
-    void drawTime(TFT_eSPI tft);
+    void draw(TFT_eSPI tft);
 };
 
 #endif
