@@ -1,29 +1,7 @@
 #include <Arduino.h>
-#include <SensirionI2CScd4x.h>
 #include <Wire.h>
 #include "SPI.h"
-#include "Adafruit_GFX.h"
-#include "Adafruit_ILI9341.h"
-//#include "DigitalWatch.h"
-#include <WiFi.h>
 #include "ESP32Time.h"
-#include <Adafruit_GPS.h>
-#include "Adafruit_TSC2007.h"
-
-#define TFT_MISO 19
-#define TFT_MOSI 18
-#define TFT_CLK 5
-#define TFT_CS   16  // Chip select control pin
-#define TFT_DC   17  // Data Command control pin
-#define TFT_RST  21 // Reset pin (could connect to RST pin)
-
-//wifi stuff
-const char* ssid       = "";
-const char* password   = "";
-//in case we need to get the time from ntp
-const char* ntpServer = "pool.ntp.org";
-const long  gmtOffset_sec = 0;
-const int   daylightOffset_sec = 0;
 
 //variables for battery readings
 const int MAX_ANALOG_VAL = 4095; //for battery measurement
@@ -34,11 +12,7 @@ const float MAX_BATTERY_VOLTAGE = 4.2; // Max LiPoly voltage of a 3.7 battery is
 #define TIME_TO_SLEEP  5        /* Time ESP32 will go to sleep (in seconds) */
 RTC_DATA_ATTR int bootCount = 0;
 
-//co2 sensor code
-SensirionI2CScd4x scd4x;
-
-Adafruit_ILI9341 tft = Adafruit_ILI9341(TFT_CS, TFT_DC, TFT_MOSI, TFT_CLK, TFT_RST, TFT_MISO);
-ESP32Time rtc(-4 * 3600);
+ESP32Time rtc(4 * 3600);
 
 //touch screen
 Adafruit_TSC2007 touch;
