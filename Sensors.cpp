@@ -19,7 +19,13 @@ Sensors::Sensors(): GPS(&Wire), scd4x() {};
 
 //uint32_t timer = millis();
 void Sensors::init() {
+  isDataReady = false;
+  co2 = 0;
+  temperature = 0.0f;
+  humidity = 0.0f;
   timer = millis();
+  initGPS();
+  initSCD41();
 }
 
 void Sensors::initGPS() {
@@ -49,19 +55,10 @@ void Sensors::initGPS() {
 }
 
 void Sensors::readGPS() {
-  // read data from the GPS in the 'main loop'
   char c = GPS.read();
-  // if you want to debug, this is a good time to do it!
-  if (GPSECHO)
-    if (c) Serial.print(c);
-  // if a sentence is received, we can check the checksum, parse it...
   if (GPS.newNMEAreceived()) {
-    // a tricky thing here is if we print the NMEA sentence, or data
-    // we end up not listening and catching other sentences!
-    // so be very wary if using OUTPUT_ALLDATA and trying to print out data
-    //    Serial.println(GPS.lastNMEA()); // this also sets the newNMEAreceived() flag to false
     if (!GPS.parse(GPS.lastNMEA())) { // this also sets the newNMEAreceived() flag to false
-      //      return tft; // we can fail to parse a sentence in which case we should just wait for another
+      return;
     }
   }
 
@@ -99,7 +96,6 @@ void Sensors::readGPS() {
     //    tft.print("Sats: "); tft.print((int)GPS.satellites); tft.println("   ");
     //    }
   }
-  //  return tft;
 }
 
 void Sensors::initSCD41() {
@@ -115,18 +111,7 @@ void Sensors::initSCD41() {
   //    Serial.print("Error trying to execute stopPeriodicMeasurement(): ");
   //    errorToString(error, errorMessage, 256);
   //    Serial.println(errorMessage);
-  //  }
-
-  //  uint16_t serial0;
-  //  uint16_t serial1;
-  //  uint16_t serial2;
-  //  error = scd4x.getSerialNumber(serial0, serial1, serial2);
-  //  if (error) {
-  //    Serial.print("Error trying to execute getSerialNumber(): ");
-  //    errorToString(error, errorMessage, 256);
-  //    Serial.println(errorMessage);
-  //  } else {
-  //    printSerialNumber(serial0, serial1, serial2);
+  //  }rintSerialNumber(serial0, serial1, serial2);
   //  }
 
   // Start Measurement
@@ -141,11 +126,23 @@ void Sensors::initSCD41() {
   //  Serial.println("Waiting for first measurement... (5 sec)");
 }
 
-
+//currently turning off GPS doesn't allow it to come back online
 void Sensors::turnOffSensors() {
   scd4x.stopPeriodicMeasurement(); // stop co2, temp, and humidity sensor. save some energy
   GPS.standby(); //put GPS on standby. save some energy.
 
+}
+
+uint16_t Sensors::getCO2(){
+  return co2;
+}
+
+float Sensors::getTemp(){
+  return temperature;
+}
+
+float Sensors::getHumidity(){
+  return humidity;
 }
 
 void Sensors::readSCD41() {
@@ -155,27 +152,28 @@ void Sensors::readSCD41() {
   delay(100);
 
   // Read Measurement
-  uint16_t co2 = 0;
-  float temperature = 0.0f;
-  float humidity = 0.0f;
-  bool isDataReady = false;
+//  uint16_t co2 = 0;
+//  float temperature = 0.0f;
+//  float humidity = 0.0f;
+  isDataReady = false;
   error = scd4x.getDataReadyFlag(isDataReady);
   if (error) {
-    Serial.print("Error trying to execute readMeasurement(): ");
-    errorToString(error, errorMessage, 256);
-    Serial.println(errorMessage);
+//    Serial.print("Error trying to execute readMeasurement(): ");
+//    errorToString(error, errorMessage, 256);
+//    Serial.println(errorMessage);
     return;
   }
   if (!isDataReady) {
     return;
   }
+//  scd4x.readMeasurement(co2, temperature, humidity);
   error = scd4x.readMeasurement(co2, temperature, humidity);
   if (error) {
-    Serial.print("Error trying to execute readMeasurement(): ");
-    errorToString(error, errorMessage, 256);
-    Serial.println(errorMessage);
+//    Serial.print("Error trying to execute readMeasurement(): ");
+//    errorToString(error, errorMessage, 256);
+//    Serial.println(errorMessage);
   } else if (co2 == 0) {
-    Serial.println("Invalid sample detected, skipping.");
+//    Serial.println("Invalid sample detected, skipping.");
   } else {
     temperature = temperature * 9.0f / 5.0f + 32.0f;
     //    Serial.print("Co2:");
@@ -199,6 +197,4 @@ void Sensors::readSCD41() {
     //    tft.drawString("CO2: ", 5, 10, 2);
     //    tft.drawNumber(co2, 10 + tft.textWidth("CO2: "), 10, 2);
   }
-
-  //    tft = GPSParse(tft);
 }

@@ -4,7 +4,6 @@
 #include <Arduino.h>
 //https://github.com/fbiego/ESP32Time
 class ESP32Time {
-  
   public:
     ESP32Time();
     ESP32Time(unsigned long offset);
