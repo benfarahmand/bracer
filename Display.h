@@ -15,6 +15,7 @@ class Display {
     Button settingsButton;
 //    char settingsLabel[9] = "Settings";
     bool wereButtonsDrawn = false;
+    bool backLightOn = true;
     int textSize=2;
   public:
     Display();

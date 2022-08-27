@@ -44,3 +44,7 @@ void Button::drawButton(Adafruit_ILI9341 tft) {
   tft.setTextSize(textsize);
   tft.print(text);
 }
+
+bool Button::contains(int16_t _x, int16_t _y) {
+  return ((_x >= x) && (_x < (int16_t)(x + w)) && (_y >= y) && (_y < (int16_t)(y + h)));
+}

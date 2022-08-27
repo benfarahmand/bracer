@@ -57,6 +57,9 @@ void loop() {
 
   //display data
   myDisplay.drawHomeScreen(rtc, mySensors, getBatteryInfo());
+
+  //check for button clicks
+  myDisplay.checkForButtonClicks();
   delay(500);
 //  Serial.println(rtc.getTime());
 }

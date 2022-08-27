@@ -81,6 +81,14 @@ void Display::checkForButtonClicks() {
   uint16_t x, y, z1, z2;
   if (touch.read_touch(&x, &y, &z1, &z2) && (z1 > 100)) {
     //    deepSleep(tft);
+    if(backLightOn){
+      turnOffBacklight();
+      backLightOn = false;
+    }
+    else {
+      turnOnBacklight();
+      backLightOn = true;
+    }
   }
 }
 
