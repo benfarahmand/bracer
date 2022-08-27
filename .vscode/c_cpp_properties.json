@@ -1,0 +1,41 @@
+{
+    "configurations": [
+        {
+            "name": "Mac",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "/Applications/Arduino.app",
+                "/Applications/Arduino.app/Contents/Java/libraries",
+                "/Applications/Arduino.app/Contents/Java/hardware/tools/avr/avr/include",
+                "/Applications/Arduino.app/Contents/Java/hardware/arduino/avr/variants/standard",
+                "/Applications/Arduino.app/Contents/Java/hardware/arduino/avr/cores/arduino",
+                "/Users/ben/Documents/Arduino/libraries/Sensirion_I2C_SCD4x/**",
+                "/Applications/Arduino.app/Contents/**",
+                "/Users/ben/Documents/Arduino/libraries/**",
+                "/Users/ben/Documents/Arduino/libraries/Sensirion_I2C_SCD4x/src/"
+            ],
+            "browse": {
+                "limitSymbolsToIncludedHeaders": false,
+                "path": [
+                    "/System/Library/Frameworks/Kernel.framework/Versions/A/Headers",
+                    "/Users/ben/Documents/Arduino/libraries/**",
+                    "/Applications/Arduino.app/Contents/**",
+                    "/Users/ben/Documents/Arduino/libraries/Sensirion_I2C_SCD4x/src"
+                ]
+            },
+            "defines": [],
+            "macFrameworkPath": [
+                "/System/Library/Frameworks",
+                "/Library/Frameworks"
+            ],
+            "compilerPath": "/usr/bin/clang",
+            "cStandard": "c17",
+            "cppStandard": "c++17",
+            "intelliSenseMode": "macos-clang-x64",
+            "forcedInclude": [
+                "/Users/ben/Documents/Arduino/libraries/Sensirion_I2C_SCD4x/src/SensirionI2CScd4x.h"
+            ]
+        }
+    ],
+    "version": 4
+}
