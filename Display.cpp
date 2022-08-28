@@ -16,9 +16,19 @@
 #define TFT_LIGHT 33
 #define TFT_CCS 32
 
-Display::Display(): tft(TFT_CS, TFT_DC, TFT_MOSI, TFT_CLK, TFT_RST, TFT_MISO), settingsButton() {}
+Display::Display(): tft(TFT_CS, TFT_DC, TFT_MOSI, TFT_CLK, TFT_RST, TFT_MISO), settingsButton(), homeButton() {}
 
 void Display::init() {
+  screen = 0; //0 = home, 1 = settings
+  minX = 0;//380;
+  maxX = 3684;
+  minY = 0;//585; 
+  maxY = 3825; //value determined from touching the corners of the resistive touch screen
+  screenWidth = 320; //pixel value
+  screenHeight = 240; //pixel value
+  xConvert = (screenWidth / (maxX - minX));
+  yConvert = (screenHeight / (maxY - minY));
+  
   tft.begin();
   tft.setRotation(1);
   tft.fillScreen(ILI9341_BLACK);
@@ -31,8 +41,8 @@ void Display::init() {
 
 
   //  settingsLabel = "Settings";
-    settingsButton.initButton(tft, 0, 200, 120, 40, ILI9341_WHITE, ILI9341_BLACK, ILI9341_WHITE, "Settings", 2);
-
+  homeButton.initButton(tft, 0, 200, 80, 40, ILI9341_WHITE, ILI9341_BLACK, ILI9341_WHITE, "Home", 2);
+  settingsButton.initButton(tft, 80, 200, 120, 40, ILI9341_WHITE, ILI9341_BLACK, ILI9341_WHITE, "Settings", 2);
 
   if (!touch.begin()) {
     while (1) {
@@ -52,19 +62,48 @@ void Display::turnOnBacklight() {
   digitalWrite(TFT_LIGHT, HIGH);
 }
 
-void Display::drawButtons(){
+void Display::drawButtons() {
   if (!wereButtonsDrawn) {
     //insert buttons here to draw
     settingsButton.drawButton(tft);
+    homeButton.drawButton(tft);
     wereButtonsDrawn = true;
   }
 }
 
-void Display::drawHomeScreen(ESP32Time rtc, Sensors s, String batteryDetails) {
+void Display::checkForButtonClicks() {
+  uint16_t x, y, z1, z2;
+  //due to screen being rotated, the x and y values are flipped
+  if (touch.read_touch(&y, &x, &z1, &z2) && (z1 > 50)) {
+    x = 320 - (int)(((float)x) * xConvert);
+    y = (int)(((float)y) * yConvert);
+    //if the backlight is off, then any touch should turn it on
+    //eventually it would be nice to have the accelerometer also control the backlight
+    if (!backLightOn) {
+      turnOnBacklight();
+      backLightOn = true;
+    } else {
+      if (homeButton.contains(x, y) && screen != 0) {
+        screen = 0;
+        wasScreenCleared = false;
+        wereButtonsDrawn = false;
+        return;
+      }
+      if (settingsButton.contains(x, y) && screen != 1) {
+        screen = 1;
+        wasScreenCleared = false;
+        wereButtonsDrawn = false;
+        return;
+      }
+    }
+  }
+}
+
+void Display::drawHomeScreen(ESP32Time& rtc, Sensors& s, String batteryDetails) {
   tft.setCursor(0, 0);
   tft.setTextSize(textSize);
   tft.println(rtc.getDate());
-  tft.setTextSize(textSize*2);
+  tft.setTextSize(textSize * 2);
   tft.println(rtc.getTime());
   tft.setTextSize(textSize);
   tft.print("CO2:");
@@ -77,18 +116,22 @@ void Display::drawHomeScreen(ESP32Time rtc, Sensors s, String batteryDetails) {
   drawButtons();
 }
 
-void Display::checkForButtonClicks() {
-  uint16_t x, y, z1, z2;
-  if (touch.read_touch(&x, &y, &z1, &z2) && (z1 > 100)) {
-    //    deepSleep(tft);
+void Display::draw(ESP32Time& rtc, Sensors& s, String batteryDetails) {
+  if(!wasScreenCleared) {
+    clearScreen();
+  }
+  if (screen == 0) {
+    drawHomeScreen(rtc, s, batteryDetails);
+  }
+  else if (screen == 1) {
+    drawSettingsScreen();
+  } else {
+    return;
   }
 }
 
-void Display::changeScreen() {
-
-}
-
 void Display::drawSettingsScreen() {
+  tft.setCursor(0, 0);
   //settings options: high power mode and low power mode
   //1. high power mode can collect data frequently
   //2. low power mode can collect data once every 5 or so minutes
@@ -98,5 +141,11 @@ void Display::drawSettingsScreen() {
   //6. turn on/off wifi for transfering data
   //7. turn on/off BT for notifications?
   //8. show total up time and amount of battery voltage used
-  //  return tft;
+  //9. Sync the time with GPS time
+  drawButtons();
+}
+
+void Display::clearScreen(){
+  tft.fillScreen(ILI9341_BLACK);
+  wasScreenCleared=true;
 }
