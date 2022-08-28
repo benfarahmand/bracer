@@ -10,10 +10,11 @@
 const int MAX_ANALOG_VAL = 4095; //for battery measurement
 const float MAX_BATTERY_VOLTAGE = 4.2; // Max LiPoly voltage of a 3.7 battery is 4.2
 
-//variables for deep sleep modes
-#define uS_TO_S_FACTOR 1000000  /* Conversion factor for micro seconds to seconds */
-#define TIME_TO_SLEEP  5        /* Time ESP32 will go to sleep (in seconds) */
-RTC_DATA_ATTR int bootCount = 0;
+//variables for sleep modes
+//#define uS_TO_S_FACTOR 1000000  /* Conversion factor for micro seconds to seconds */
+//#define TIME_TO_SLEEP  5        /* Time ESP32 will go to sleep (in seconds) */
+//RTC_DATA_ATTR int bootCount = 0;
+#define BUTTON_PIN_BITMASK 0x8000000000 // 2^39 in hex, GPI 39
 
 ESP32Time rtc(4 * 3600);
 Sensors mySensors;
@@ -42,9 +43,7 @@ void setup() {
   while (!Serial) {
     delay(100);
   }
-  rtc.setTime(30, 24, 15, 21, 8, 2022);
-//  mySensors = new Sensors();
-//  myDisplay = new Display();
+  rtc.setTime(30, 24, 15, 21, 8, 2022);//temporary values. will update it later via GPS module
   mySensors.init();
   myDisplay.init();
   Serial.println("setup");
@@ -55,8 +54,8 @@ void loop() {
   mySensors.readSCD41();
   mySensors.readGPS();
 
-  //display data
-  myDisplay.drawHomeScreen(rtc, mySensors, getBatteryInfo());
+  //pass data
+  myDisplay.draw(rtc, mySensors, getBatteryInfo());
 
   //check for button clicks
   myDisplay.checkForButtonClicks();
@@ -65,25 +64,44 @@ void loop() {
 }
 
 
-//#define BUTTON_PIN_BITMASK 0x8000000000 // 2^39 in hex, GPI 39
 
-//void deepSleep(Adafruit_ILI9341 tft) {
-//  tft.fillScreen(ILI9341_BLACK);
-//  tft.setCursor(0, 0);
-//
-//  //put various sensors to sleep
-//  tft.println("Shifting sensors to low power.");
+
+void deepSleep(Adafruit_ILI9341 tft) {
+  tft.fillScreen(ILI9341_BLACK);
+  tft.setCursor(0, 0);
+
+  //put various sensors to sleep
+  tft.println("Shifting sensors to low power.");
 //  turnOffI2CSensors();
-//
-//  // need to check if Bluetooth and Wifi is on and turn them off
-//
-//  //  esp_sleep_enable_ext0_wakeup(GPIO_NUM_32, 1); //1 = High, 0 = Low
-//
-//  //If you were to use ext1, you would use it like
-//  esp_sleep_enable_ext1_wakeup(BUTTON_PIN_BITMASK, ESP_EXT1_WAKEUP_ANY_HIGH);
-//  tft.println("Going to sleep now");
-//  delay(1000);
-//  tft.fillScreen(ILI9341_BLACK);
-//  //  esp_deep_sleep_start(); //loses all memory of things
-//  esp_light_sleep_start(); //stores memory
-//}
+
+  // need to check if Bluetooth and Wifi is on and turn them off
+
+  //  esp_sleep_enable_ext0_wakeup(GPIO_NUM_32, 1); //1 = High, 0 = Low
+
+  //If you were to use ext1, you would use it like
+  esp_sleep_enable_ext1_wakeup(BUTTON_PIN_BITMASK, ESP_EXT1_WAKEUP_ANY_HIGH);
+  tft.println("Going to deep sleep now");
+  delay(1000);
+  tft.fillScreen(ILI9341_BLACK);
+  esp_deep_sleep_start(); //loses all memory of things
+}
+
+void lightSleep(Adafruit_ILI9341 tft) {
+  tft.fillScreen(ILI9341_BLACK);
+  tft.setCursor(0, 0);
+
+  //put various sensors to sleep
+  tft.println("Shifting sensors to low power.");
+//  turnOffI2CSensors();
+
+  // need to check if Bluetooth and Wifi is on and turn them off
+
+  //  esp_sleep_enable_ext0_wakeup(GPIO_NUM_32, 1); //1 = High, 0 = Low
+
+  //If you were to use ext1, you would use it like
+  esp_sleep_enable_ext1_wakeup(BUTTON_PIN_BITMASK, ESP_EXT1_WAKEUP_ANY_HIGH);
+  tft.println("Going to light sleep now");
+  delay(1000);
+  tft.fillScreen(ILI9341_BLACK);
+  esp_light_sleep_start(); //stores memory
+}

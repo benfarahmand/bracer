@@ -13,20 +13,28 @@ class Display {
     Adafruit_ILI9341 tft;
     Adafruit_TSC2007 touch;//touch screen
     Button settingsButton;
-//    char settingsLabel[9] = "Settings";
+    Button homeButton;
     bool wereButtonsDrawn = false;
+    bool wasScreenCleared = false;
     bool backLightOn = true;
-    int textSize=2;
+    int textSize = 2;
+    int screen; //0 = home, 1 = settings
+    //touch screen calibration values
+    float minX, maxX;
+    float minY, maxY;
+    float screenWidth, screenHeight;
+    float xConvert, yConvert;
   public:
     Display();
     void init();
-    void drawHomeScreen(ESP32Time rtc, Sensors s, String batteryDetails);
+    void draw(ESP32Time& rtc, Sensors& s, String batteryDetails);
+    void drawHomeScreen(ESP32Time& rtc, Sensors& s, String batteryDetails);
     void drawSettingsScreen();
     void turnOnBacklight();
     void turnOffBacklight();
     void checkForButtonClicks();
-    void changeScreen();
     void drawButtons();
+    void clearScreen();
 };
 
 #endif
