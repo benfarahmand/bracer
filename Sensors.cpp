@@ -3,6 +3,8 @@
 #include <Adafruit_GPS.h>
 #include <Wire.h>
 
+//scd41 code: https://github.com/Sensirion/arduino-i2c-scd4x/blob/master/src/SensirionI2CScd4x.cpp
+//GPS code: https://github.com/adafruit/Adafruit_GPS/blob/master/src/Adafruit_GPS.cpp
 
 // Set GPSECHO to 'false' to turn off echoing the GPS data to the Serial console
 // Set to 'true' if you want to debug and listen to the raw GPS sentences
@@ -20,9 +22,11 @@ Sensors::Sensors(): GPS(&Wire), scd4x() {};
 //uint32_t timer = millis();
 void Sensors::init() {
   isDataReady = false;
+  isLowPower = false;
   co2 = 0;
   temperature = 0.0f;
   humidity = 0.0f;
+  timer = 0;
   timer = millis();
   initGPS();
   initSCD41();
@@ -98,39 +102,51 @@ void Sensors::readGPS() {
   }
 }
 
-void Sensors::initSCD41() {
-  //  uint16_t error;
-  //  char errorMessage[256];
+void Sensors::getGPSTime(){
 
+}
+
+double Sensors::getLatitude(){
+  return GPS.latitude_fixed/10000000.0;
+}
+
+double Sensors::getLongitude(){
+  return GPS.longitude_fixed/10000000.0;
+}
+
+void Sensors::initSCD41() {
   scd4x.begin(Wire);
 
   // stop potentially previously started measurement
   scd4x.stopPeriodicMeasurement();
-  //  error = scd4x.stopPeriodicMeasurement();
-  //  if (error) {
-  //    Serial.print("Error trying to execute stopPeriodicMeasurement(): ");
-  //    errorToString(error, errorMessage, 256);
-  //    Serial.println(errorMessage);
-  //  }rintSerialNumber(serial0, serial1, serial2);
-  //  }
 
   // Start Measurement
-  scd4x.startPeriodicMeasurement();
-  //  error = scd4x.startPeriodicMeasurement();
-  //  if (error) {
-  //    Serial.print("Error trying to execute startPeriodicMeasurement(): ");
-  //    errorToString(error, errorMessage, 256);
-  //    Serial.println(errorMessage);
-  //  }
+  if(!isLowPower) {
+    scd4x.startPeriodicMeasurement();
+  }
+  else {
+    scd4x.startLowPowerPeriodicMeasurement();
+  }
+}
 
-  //  Serial.println("Waiting for first measurement... (5 sec)");
+void Sensors::highPowerMode(){
+  isLowPower = false;
+}
+
+void Sensors::lowPowerMode(){
+  //collect measurements once in a while, maybe once every minute
+  isLowPower = true;
 }
 
 //currently turning off GPS doesn't allow it to come back online
 void Sensors::turnOffSensors() {
   scd4x.stopPeriodicMeasurement(); // stop co2, temp, and humidity sensor. save some energy
-  GPS.standby(); //put GPS on standby. save some energy.
+  scd4x.powerDown(); //i wonder if this works
+  GPS.standby(); //put GPS on standby. save some energy. this causes some issue...
+}
 
+void Sensors::turnOnSensors(){
+  //if sensors have been turned off, then we need to turn them on before we reinit
 }
 
 uint16_t Sensors::getCO2(){
@@ -149,18 +165,12 @@ void Sensors::readSCD41() {
   uint16_t error;
   char errorMessage[256];
 
-  delay(100);
+  // delay(100);
 
-  // Read Measurement
-//  uint16_t co2 = 0;
-//  float temperature = 0.0f;
-//  float humidity = 0.0f;
   isDataReady = false;
   error = scd4x.getDataReadyFlag(isDataReady);
   if (error) {
-//    Serial.print("Error trying to execute readMeasurement(): ");
-//    errorToString(error, errorMessage, 256);
-//    Serial.println(errorMessage);
+    //you can print the error if need be
     return;
   }
   if (!isDataReady) {
@@ -169,32 +179,10 @@ void Sensors::readSCD41() {
 //  scd4x.readMeasurement(co2, temperature, humidity);
   error = scd4x.readMeasurement(co2, temperature, humidity);
   if (error) {
-//    Serial.print("Error trying to execute readMeasurement(): ");
-//    errorToString(error, errorMessage, 256);
-//    Serial.println(errorMessage);
+    //you can print the error if need be
   } else if (co2 == 0) {
-//    Serial.println("Invalid sample detected, skipping.");
+    //skip if no co2 values, might be an issue with the reading
   } else {
     temperature = temperature * 9.0f / 5.0f + 32.0f;
-    //    Serial.print("Co2:");
-    //    Serial.print(co2);
-    //    Serial.print("\t");
-    //    Serial.print("Temperature:");
-    //    Serial.print(temperature);
-    //    Serial.print("\t");
-    //    Serial.print("Humidity:");
-    //    Serial.println(humidity);
-    //    tft.fillScreen(ILI9341_BLACK);
-    //    tft.print("Co2:");
-    //    tft.print(co2);
-    //    tft.println("   ");
-    //    tft.print("Temp:");
-    //    tft.print(temperature);
-    //    tft.println("   ");
-    //    tft.print("Hum:");
-    //    tft.print(humidity);
-    //    tft.println("   ");
-    //    tft.drawString("CO2: ", 5, 10, 2);
-    //    tft.drawNumber(co2, 10 + tft.textWidth("CO2: "), 10, 2);
   }
 }

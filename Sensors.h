@@ -14,18 +14,34 @@ class Sensors {
     uint16_t co2;
     float temperature;
     float humidity;
+    int lowPowerTimeDelay;
+    bool isLowPower;
   public:
     uint32_t timer;
     Sensors();
+    
+    //general functions
     void init();
+    void highPowerMode();
+    void lowPowerMode();
+    void turnOffSensors();
+    void turnOnSensors();
+    
+    //Atmospheric Sensors
     void initSCD41();
     void readSCD41();
-    void initGPS();
-    void readGPS();
-    void turnOffSensors();
     uint16_t getCO2();
     float getTemp();
     float getHumidity();
+
+    //GPS Sensor
+    void initGPS();
+    void readGPS();
+    double getLatitude();
+    double getLongitude();
+
+    //Heart Beat Sensor
+    //To Do
 };
 
 #endif

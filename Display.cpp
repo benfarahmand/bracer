@@ -112,6 +112,9 @@ void Display::drawHomeScreen(ESP32Time& rtc, Sensors& s, String batteryDetails) 
   tft.println(s.getTemp());
   tft.print("Hum:");
   tft.println(s.getHumidity());
+  //can add vOC information here
+  //can also add pulse information here
+  //should also add some information about whether GPS has a fix or not
   tft.println(batteryDetails);
   drawButtons();
 }
@@ -133,9 +136,9 @@ void Display::draw(ESP32Time& rtc, Sensors& s, String batteryDetails) {
 void Display::drawSettingsScreen() {
   tft.setCursor(0, 0);
   //settings options: high power mode and low power mode
-  //1. high power mode can collect data frequently
-  //2. low power mode can collect data once every 5 or so minutes
-  //3. set display brightness
+  //1. high power mode can collect data frequently. 
+  //2. low power mode can collect data once every 5 or so minutes. how can this work?
+  //3. set display brightness. apparently, it can only be on or off. So we can't have a display brightness setting. but we could try to pass a spcific value to the TFT and see what happens.
   //4. set time, maybe a button can be pressed to grab time from the GPS module
   //5. log data, maybe this is a button instead or maybe it can have an auto logging mode too
   //6. turn on/off wifi for transfering data
@@ -146,6 +149,9 @@ void Display::drawSettingsScreen() {
 }
 
 void Display::clearScreen(){
-  tft.fillScreen(ILI9341_BLACK);
+  // tft.fillScreen(ILI9341_BLACK);
+  //instead of filling the entire screen with black, 
+  //we can draw a rect over the top portion of the screen and not have to redraw the buttons
+  tft.drawRect(0,0,screenWidth,199,ILI9341_BLACK);
   wasScreenCleared=true;
 }
