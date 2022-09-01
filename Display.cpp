@@ -14,7 +14,7 @@
 #define TFT_DC   17  // Data Command control pin
 #define TFT_RST  21 // Reset pin (could connect to RST pin)
 #define TFT_LIGHT 33
-#define TFT_CCS 32
+#define TFT_CCS 32 //maybe need a separate class for reading and writing to the SD Card
 
 Display::Display(): tft(TFT_CS, TFT_DC, TFT_MOSI, TFT_CLK, TFT_RST, TFT_MISO), settingsButton(), homeButton() {}
 
@@ -137,7 +137,7 @@ void Display::drawSettingsScreen() {
   //2. low power mode can collect data once every 5 or so minutes
   //3. set display brightness
   //4. set time, maybe a button can be pressed to grab time from the GPS module
-  //5. log data, maybe this is a button instead
+  //5. log data, maybe this is a button instead or maybe it can have an auto logging mode too
   //6. turn on/off wifi for transfering data
   //7. turn on/off BT for notifications?
   //8. show total up time and amount of battery voltage used

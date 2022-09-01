@@ -60,7 +60,6 @@ void loop() {
   //check for button clicks
   myDisplay.checkForButtonClicks();
   delay(500);
-//  Serial.println(rtc.getTime());
 }
 
 
