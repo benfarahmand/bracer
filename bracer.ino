@@ -49,6 +49,7 @@ void setup() {
   Serial.println("setup");
 }
 
+
 void loop() {
   //read data
   mySensors.readSCD41();
@@ -61,8 +62,6 @@ void loop() {
   myDisplay.checkForButtonClicks();
   delay(500);
 }
-
-
 
 
 void deepSleep(Adafruit_ILI9341 tft) {

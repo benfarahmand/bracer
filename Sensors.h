@@ -30,6 +30,7 @@ class Sensors {
     //Atmospheric Sensors
     void initSCD41();
     void readSCD41();
+    //add vOC sensor
     uint16_t getCO2();
     float getTemp();
     float getHumidity();
@@ -39,6 +40,7 @@ class Sensors {
     void readGPS();
     double getLatitude();
     double getLongitude();
+    
 
     //Heart Beat Sensor
     //To Do
