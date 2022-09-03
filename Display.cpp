@@ -148,6 +148,10 @@ void Display::drawSettingsScreen() {
   drawButtons();
 }
 
+void Display::drawGraphScreen(){
+  
+}
+
 void Display::clearScreen(){
   // tft.fillScreen(ILI9341_BLACK);
   //instead of filling the entire screen with black, 

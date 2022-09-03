@@ -29,6 +29,7 @@ class Display {
     void init();
     void draw(ESP32Time& rtc, Sensors& s, String batteryDetails);
     void drawHomeScreen(ESP32Time& rtc, Sensors& s, String batteryDetails);
+    void drawGraphScreen();
     void drawSettingsScreen();
     void turnOnBacklight();
     void turnOffBacklight();
