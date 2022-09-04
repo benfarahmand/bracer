@@ -17,7 +17,7 @@ class Sensors {
     int lowPowerTimeDelay;
     bool isLowPower;
   public:
-    uint32_t timer;
+//    uint32_t timer;
     Sensors();
     
     //general functions
@@ -38,6 +38,7 @@ class Sensors {
     //GPS Sensor
     void initGPS();
     void readGPS();
+    String getGPSFix();
     void getGPSTime();
     double getLatitude();
     double getLongitude();

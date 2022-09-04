@@ -111,7 +111,7 @@ void Display::checkForButtonClicks() {
   }
 }
 
-void Display::drawHomeScreen(ESP32Time& rtc, Sensors& s, String batteryDetails, String upTime) {
+void Display::drawHomeScreen(ESP32Time& rtc, Sensors& s, String batteryDetails, String upTime, String gpsFix) {
   tft.setCursor(0, 41);
   tft.setTextSize(textSize);
   tft.println(rtc.getDate());
@@ -133,14 +133,16 @@ void Display::drawHomeScreen(ESP32Time& rtc, Sensors& s, String batteryDetails, 
   tft.println(batteryDetails);
   tft.print("Up:");
   tft.println(upTime);
+  tft.print("GPS Fix:");
+  tft.print(gpsFix);
 }
 
-void Display::draw(ESP32Time& rtc, Sensors& s, String batteryDetails) {
+void Display::draw(ESP32Time& rtc, Sensors& s, String batteryDetails, String upTime, String gpsFix) {
   if (!wasScreenCleared) {
     clearScreen();
   }
   if (screen == 0) {
-    drawHomeScreen(rtc, s, batteryDetails);
+    drawHomeScreen(rtc, s, batteryDetails, upTime, gpsFix);
   }
   else if (screen == 1) {
     drawSettingsScreen();

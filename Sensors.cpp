@@ -26,8 +26,8 @@ void Sensors::init() {
   co2 = 0;
   temperature = 0.0f;
   humidity = 0.0f;
-  timer = 0;
-  timer = millis();
+//  timer = 0;
+//  timer = millis();
   initGPS();
   initSCD41();
 }
@@ -58,6 +58,15 @@ void Sensors::initGPS() {
   //  GPS.println(PMTK_Q_RELEASE);
 }
 
+String Sensors::getGPSFix(){
+  if((int)GPS.fix==0){
+    return "No";
+  }
+  else {
+    return "Yes";
+  }
+}
+
 void Sensors::readGPS() {
   char c = GPS.read();
   if (GPS.newNMEAreceived()) {
@@ -67,8 +76,8 @@ void Sensors::readGPS() {
   }
 
   // approximately every 2 seconds or so, print out the current stats
-  if (millis() - timer > 2000) {
-    timer = millis(); // reset the timer
+//  if (millis() - timer > 2000) {
+//    timer = millis(); // reset the timer
     //    Serial.print("\nTime: ");
     //    if (GPS.hour < 10) { Serial.print('0'); }
     //    Serial.print(GPS.hour, DEC); Serial.print(':');
@@ -99,7 +108,7 @@ void Sensors::readGPS() {
     //    tft.print("Alt: "); tft.print(GPS.altitude); tft.println("   ");
     //    tft.print("Sats: "); tft.print((int)GPS.satellites); tft.println("   ");
     //    }
-  }
+//  }
 }
 
 void Sensors::getGPSTime(){

@@ -2,6 +2,6 @@
 
 Graph::Graph() {}
 
-Graph::draw(){}
+void Graph::draw(){}
 
-Graph::setData(){}
+void Graph::setData(){}

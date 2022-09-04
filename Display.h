@@ -29,8 +29,8 @@ class Display {
   public:
     Display();
     void init();
-    void draw(ESP32Time& rtc, Sensors& s, String batteryDetails);
-    void drawHomeScreen(ESP32Time& rtc, Sensors& s, String batteryDetails);
+    void draw(ESP32Time& rtc, Sensors& s, String batteryDetails, String upTime, String gpsFix);
+    void drawHomeScreen(ESP32Time& rtc, Sensors& s, String batteryDetails, String upTime, String gpsFix);
     void drawGraphScreen();
     void drawSettingsScreen();
     void turnOnBacklight();

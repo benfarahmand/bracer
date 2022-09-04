@@ -19,6 +19,9 @@ const float MAX_BATTERY_VOLTAGE = 4.2; // Max LiPoly voltage of a 3.7 battery is
 ESP32Time rtc(4 * 3600);
 Sensors mySensors;
 Display myDisplay;
+uint32_t timer;
+int timeToUpdate = 2000;
+unsigned long startTime;
 
 String getBatteryInfo() {
   // A13 pin is not exposed on Huzzah32 board because it's tied to
@@ -44,23 +47,33 @@ void setup() {
     delay(100);
   }
   rtc.setTime(30, 24, 15, 21, 8, 2022);//temporary values. will update it later via GPS module
+  startTime = rtc.getEpoch();
   mySensors.init();
   myDisplay.init();
+  timer = millis();
   Serial.println("setup");
 }
 
 
 void loop() { //we could improve performance by only reading sensors and drawing to screen once a minute, but checking for button clicks on every loop
-  //read data
-  mySensors.readSCD41();
-  mySensors.readGPS();
+  if (millis() - timer > timeToUpdate) {
+    timer = millis();
+    //read data
+    mySensors.readSCD41();
+    mySensors.readGPS();
 
-  //pass data
-  myDisplay.draw(rtc, mySensors, getBatteryInfo());
-
+    //pass data
+    myDisplay.draw(rtc, mySensors, getBatteryInfo(), getUpTime(), mySensors.getGPSFix());
+    //if more than some seconds have passed, log the data
+  }
   //check for button clicks
   myDisplay.checkForButtonClicks();
-  delay(500);
+
+}
+
+String getUpTime(){
+  unsigned long upTime = rtc.getEpoch() - startTime;
+  return (String) upTime;
 }
 
 
@@ -70,7 +83,7 @@ void deepSleep(Adafruit_ILI9341 tft) {
 
   //put various sensors to sleep
   tft.println("Shifting sensors to low power.");
-//  turnOffI2CSensors();
+  //  turnOffI2CSensors();
 
   // need to check if Bluetooth and Wifi is on and turn them off
 
@@ -90,7 +103,7 @@ void lightSleep(Adafruit_ILI9341 tft) {
 
   //put various sensors to sleep
   tft.println("Shifting sensors to low power.");
-//  turnOffI2CSensors();
+  //  turnOffI2CSensors();
 
   // need to check if Bluetooth and Wifi is on and turn them off
 
