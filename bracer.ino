@@ -50,7 +50,7 @@ void setup() {
 }
 
 
-void loop() {
+void loop() { //we could improve performance by only reading sensors and drawing to screen once a minute, but checking for button clicks on every loop
   //read data
   mySensors.readSCD41();
   mySensors.readGPS();

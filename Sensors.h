@@ -38,8 +38,10 @@ class Sensors {
     //GPS Sensor
     void initGPS();
     void readGPS();
+    void getGPSTime();
     double getLatitude();
     double getLongitude();
+    void syncTimeWithGPSTime();
     
 
     //Heart Beat Sensor

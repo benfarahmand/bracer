@@ -2,13 +2,15 @@
 
 Settings::Settings() {}
 
+void Settings::draw(){}
+
 void Settings::setHighPowerMode(){}
 
 void Settings::setLowPowerMode(){}
 
 void Settings::setTimeManually(){}
 
-void Settings::syncTimeWithGPSTim(){}
+void Settings::syncTimeWithGPSTime(){}
 
 void Settings::manuallyLogData(){}
 

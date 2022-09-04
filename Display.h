@@ -14,6 +14,7 @@ class Display {
     Adafruit_TSC2007 touch;//touch screen
     Button settingsButton;
     Button homeButton;
+    Button graphButton;
     bool wereButtonsDrawn = false;
     bool wasScreenCleared = false;
     bool backLightOn = true;
@@ -22,7 +23,8 @@ class Display {
     //touch screen calibration values
     float minX, maxX;
     float minY, maxY;
-    float screenWidth, screenHeight;
+    float screenWidth = 320; //pixel value
+    float screenHeight = 240; //pixel value
     float xConvert, yConvert;
   public:
     Display();

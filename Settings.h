@@ -2,6 +2,7 @@
 #define SETTINGS_H
 
 #include <Arduino.h>
+#include "Button.h"
 
 //settings options: high power mode and low power mode
   //1. high power mode can collect data frequently. 
@@ -16,16 +17,19 @@
 
 class Settings {
   private:
+    Button powerModeButton;
+    Button syncTimeWithGPSButton;
     
   public:
     
     Settings();
+    void draw();
     void setHighPowerMode();
     void setLowPowerMode();
     void setTimeManually();
     void syncTimeWithGPSTime();
-    void manuallyLogData();
-    void autoLogDataAtInterval(int interval);
+    void manuallyLogData(); //this should be on the home screen
+    void autoLogDataAtInterval(int interval); 
     void turnWifiOff();
     void turnWifiOn();
     void turnBluetoothOff();
