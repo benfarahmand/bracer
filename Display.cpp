@@ -18,7 +18,9 @@
 #define TFT_LIGHT 33
 #define TFT_CCS 32 //maybe need a separate class for reading and writing to the SD Card
 
-Display::Display(): tft(TFT_CS, TFT_DC, TFT_MOSI, TFT_CLK, TFT_RST, TFT_MISO), settingsButton(), homeButton() {}
+Display::Display(): tft(TFT_CS, TFT_DC, TFT_MOSI, TFT_CLK, TFT_RST, TFT_MISO),
+  settingsButton(), homeButton(), graphButton(),
+  settingScreen(), graphScreen(){}
 
 void Display::init() {
   screen = 0; //0 = home, 1 = settings
@@ -45,16 +47,17 @@ void Display::init() {
   graphButton.initButton(tft, 80, 0, 120, 40,  ILI9341_WHITE, ILI9341_BLACK, ILI9341_WHITE, "Graph", 2);
   settingsButton.initButton(tft, 200, 0, 120, 40, ILI9341_WHITE, ILI9341_BLACK, ILI9341_WHITE, "Settings", 2);
 
-  if (!touch.begin()) {
+  if (!touch.begin()) { //wait for touch to begin
     while (1) {
       delay(10);
     }
   }
 
-  //    tft.fillScreen(ILI9341_BLACK);
-  //  return tft;
+  settingsScreen.init(tft);
+  graphScreen.init(tft);
 }
 
+//used for saving battery power
 void Display::turnOffBacklight() {
   digitalWrite(TFT_LIGHT, LOW);
 }
@@ -79,13 +82,18 @@ void Display::checkForButtonClicks() {
   if (touch.read_touch(&y, &x, &z1, &z2) && (z1 > 50)) {
     x = 320 - (int)(((float)x) * xConvert);
     y = (int)(((float)y) * yConvert);
+    Serial.print("x:");
+    Serial.println(x);
+    Serial.print("y:");
+    Serial.println(y);
     //if the backlight is off, then any touch should turn it on
     //eventually it would be nice to have the accelerometer also control the backlight
     if (!backLightOn) {
       turnOnBacklight();
       backLightOn = true;
     } else {
-      //switch between screens
+
+      //buttons for switching between screens
       if (homeButton.contains(x, y) && screen != 0) {
         Serial.println("home screen");
         screen = 0;
@@ -107,6 +115,12 @@ void Display::checkForButtonClicks() {
         wereButtonsDrawn = false;
         return;
       }
+
+      //now check for specific screen buttons
+      if(screen == 1){
+        settingsScreen.checkForButtonClicks(x,y);
+      }
+      
     }
   }
 }
@@ -186,6 +200,6 @@ void Display::clearScreen() {
   //  tft.fillScreen(ILI9341_BLACK);
   //instead of filling the entire screen with black,
   //we can draw a rect over the top portion of the screen and not have to redraw the buttons
-  tft.fillRect(0, 42, screenWidth, 198, ILI9341_BLACK);
+  tft.fillRect(0, 41, screenWidth, 198, ILI9341_BLACK);
   wasScreenCleared = true;
 }

@@ -20,25 +20,9 @@ ESP32Time rtc(4 * 3600);
 Sensors mySensors;
 Display myDisplay;
 uint32_t timer;
-int timeToUpdate = 2000;
+int timeToUpdate = 1000;
 unsigned long startTime;
 
-String getBatteryInfo() {
-  // A13 pin is not exposed on Huzzah32 board because it's tied to
-  // measuring voltage level of battery. Note: you must
-  // multiply the analogRead value by 2x to get the true battery
-  // level. See:
-  // https://learn.adafruit.com/adafruit-huzzah32-esp32-feather/esp32-faq
-  int rawValue = analogRead(A13);
-
-  // Reference voltage on ESP32 is 1.1V
-  // https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/peripherals/adc.html#adc-calibration
-  // See also: https://bit.ly/2zFzfMT
-  float voltageLevel = (rawValue / 4095.0) * 2 * 1.1 * 3.3; // calculate voltage level
-  float batteryFraction = voltageLevel / MAX_BATTERY_VOLTAGE;
-
-  return (String)"Bat:" + voltageLevel + ":" + (batteryFraction * 100) + "%   ";
-}
 
 void setup() {
   Serial.begin(115200);
@@ -66,9 +50,27 @@ void loop() { //we could improve performance by only reading sensors and drawing
     myDisplay.draw(rtc, mySensors, getBatteryInfo(), getUpTime(), mySensors.getGPSFix());
     //if more than some seconds have passed, log the data
   }
+  delay(50);
   //check for button clicks
   myDisplay.checkForButtonClicks();
 
+}
+
+String getBatteryInfo() {
+  // A13 pin is not exposed on Huzzah32 board because it's tied to
+  // measuring voltage level of battery. Note: you must
+  // multiply the analogRead value by 2x to get the true battery
+  // level. See:
+  // https://learn.adafruit.com/adafruit-huzzah32-esp32-feather/esp32-faq
+  int rawValue = analogRead(A13);
+
+  // Reference voltage on ESP32 is 1.1V
+  // https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/peripherals/adc.html#adc-calibration
+  // See also: https://bit.ly/2zFzfMT
+  float voltageLevel = (rawValue / 4095.0) * 2 * 1.1 * 3.3; // calculate voltage level
+  float batteryFraction = voltageLevel / MAX_BATTERY_VOLTAGE;
+
+  return (String)"Bat:" + voltageLevel + ":" + (batteryFraction * 100) + "%   ";
 }
 
 String getUpTime(){

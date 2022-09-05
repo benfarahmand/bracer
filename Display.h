@@ -15,6 +15,8 @@ class Display {
     Button settingsButton;
     Button homeButton;
     Button graphButton;
+    Settings settingScreen;
+    Graph graphScreen;
     bool wereButtonsDrawn = false;
     bool wasScreenCleared = false;
     bool backLightOn = true;

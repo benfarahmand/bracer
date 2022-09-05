@@ -12,7 +12,8 @@ class Graph {
     double Battery [20];
     double Latitude [20];
     double Longitude [20];
-    double Time [20];
+    unsigned long Time [20]; //this is epoch time
+    unsigned long timer; //timer to keep track of when to store values
 //    float vOC []; //to do once i attached the sensor
 //    float Pulse []; //to do once i attach the sensor
   public:

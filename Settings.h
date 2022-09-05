@@ -3,6 +3,8 @@
 
 #include <Arduino.h>
 #include "Button.h"
+#include "ESP32Time.h"
+#include <Adafruit_GPS.h>
 
 //settings options: high power mode and low power mode
   //1. high power mode can collect data frequently. 
@@ -15,10 +17,15 @@
   //8. show total up time and amount of battery voltage used
   //9. Sync the time with GPS time
 
+//a class for managing the settings screen with all of its options
 class Settings {
   private:
     Button powerModeButton;
     Button syncTimeWithGPSButton;
+    bool wereButtonsDrawn;
+    bool powerModeHigh;
+    Adafruit_GPS gps;
+    ESP32Time rtc;
     
   public:
     
@@ -35,6 +42,7 @@ class Settings {
     void turnBluetoothOff();
     void turnBluetoothOn();
     void viewUpTime();
+    void checkForButtonClicks();
 
     
 };
