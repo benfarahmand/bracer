@@ -55,7 +55,7 @@ void loop() { //we could improve performance by only reading sensors and drawing
     myDisplay.draw(rtc, mySensors, getBatteryInfo(), getUpTime(), mySensors.getGPSFix());
     //if more than some seconds have passed, log the data
     //unsigned long upt, unsigned long epochT, double carbon_dioxide, double hum, double temp, double lati, double longi, double bat
-    myGraph.setData(getUpTime(), rtc.getEpoch(), );
+    myGraph.setData(getUpTime(), rtc.getEpoch(), mySensors.);
   }
   delay(50);
   //check for button clicks
