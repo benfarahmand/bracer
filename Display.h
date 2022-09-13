@@ -7,16 +7,15 @@
 #include "ESP32Time.h"
 #include "Sensors.h"
 #include "Button.h"
+#include "Settings.h"
+#include "Graph.h"
 
 class Display {
   private:
-    Adafruit_ILI9341 tft;
     Adafruit_TSC2007 touch;//touch screen
     Button settingsButton;
     Button homeButton;
     Button graphButton;
-    Settings settingScreen;
-    Graph graphScreen;
     bool wereButtonsDrawn = false;
     bool wasScreenCleared = false;
     bool backLightOn = true;
@@ -29,15 +28,17 @@ class Display {
     float screenHeight = 240; //pixel value
     float xConvert, yConvert;
   public:
+    Adafruit_ILI9341 tft;
+    
     Display();
     void init();
-    void draw(ESP32Time& rtc, Sensors& s, String batteryDetails, String upTime, String gpsFix);
+    void draw(ESP32Time& rtc, Sensors& s, Settings& mySettings, String batteryDetails, String upTime, String gpsFix);
     void drawHomeScreen(ESP32Time& rtc, Sensors& s, String batteryDetails, String upTime, String gpsFix);
     void drawGraphScreen();
-    void drawSettingsScreen();
+    void drawSettingsScreen(Settings& mySettings);
     void turnOnBacklight();
     void turnOffBacklight();
-    void checkForButtonClicks();
+    void checkForButtonClicks(Settings& settingsScreen);
     void drawButtons();
     void clearScreen();
 };

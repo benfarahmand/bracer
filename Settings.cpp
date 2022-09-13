@@ -5,16 +5,16 @@
 #include "Button.h"
 #include "ESP32Time.h"
 #include <Adafruit_GPS.h>
+#include "Sensors.h"
 
-Settings::Settings(): powerModeButton(): syncTimeWithGPSButton() {}
+Settings::Settings(): powerModeButton(), syncTimeWithGPSButton() {}
 
-void Settings::init(Adafruit_ILI9341& tft, Adafruit_GPS& g, ESP32Time& r) {
+void Settings::init(Adafruit_ILI9341& tft, Sensors& s) {
   powerModeButton.initButton(tft, 200, 40, 80, 40, ILI9341_WHITE, ILI9341_BLACK, ILI9341_WHITE, "Power Mode", 2);
   syncTimeWithGPSButton.initButton(tft, 200, 80, 80, 40, ILI9341_WHITE, ILI9341_BLACK, ILI9341_WHITE, "Sync Time", 2);
+  mySensors = s;
   wereButtonsDrawn = false;
   powerModeHigh = true;
-  gps = g;
-  rtc = r;
 }
 
 void Settings::draw(Adafruit_ILI9341 &tft) {
@@ -22,7 +22,6 @@ void Settings::draw(Adafruit_ILI9341 &tft) {
     powerModeButton.drawButton(tft);
     syncTimeWithGPSButton.drawButton(tft);
   }
-  checkForButtonClicks();
 }
 
 void Settings::setHighPowerMode() {
@@ -34,9 +33,9 @@ void Settings::setLowPowerMode() {
 }
 
 void Settings::syncTimeWithGPSTime() {
-  if(gps.fix){
+  if(mySensors.GPS.fix){
     //setTime(int sc, int mn, int hr, int dy, int mt, int yr, int ms = 0);
-    rtc.setTime(gps.seconds, gps.minute, gps.hour, gps.day, gps.month, gps.year);//update time values from GPS module    
+    rtc.setTime(mySensors.GPS.seconds, mySensors.GPS.minute, mySensors.GPS.hour, mySensors.GPS.day, mySensors.GPS.month, mySensors.GPS.year);//update time values from GPS module    
   }
 }
 
@@ -56,7 +55,7 @@ void Settings::turnBluetoothOn() {}
 
 void Settings::viewUpTime() {} //not sure if i need this
 
-void Settings::checkForButtonClicks(int x, int y) {
+void Settings::checkForButtonClicks(uint16_t& x, uint16_t& y) {
   if (powerModeButton.contains(x, y)) {
     if (powerModeHigh) {
       setLowPowerMode();

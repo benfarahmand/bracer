@@ -19,8 +19,7 @@
 #define TFT_CCS 32 //maybe need a separate class for reading and writing to the SD Card
 
 Display::Display(): tft(TFT_CS, TFT_DC, TFT_MOSI, TFT_CLK, TFT_RST, TFT_MISO),
-  settingsButton(), homeButton(), graphButton(),
-  settingScreen(), graphScreen(){}
+  settingsButton(), homeButton(), graphButton() {}
 
 void Display::init() {
   screen = 0; //0 = home, 1 = settings
@@ -52,9 +51,6 @@ void Display::init() {
       delay(10);
     }
   }
-
-  settingsScreen.init(tft);
-  graphScreen.init(tft);
 }
 
 //used for saving battery power
@@ -76,7 +72,7 @@ void Display::drawButtons() {
   }
 }
 
-void Display::checkForButtonClicks() {
+void Display::checkForButtonClicks(Settings& settingsScreen) {
   uint16_t x, y, z1, z2;
   //due to screen being rotated, the x and y values are flipped
   if (touch.read_touch(&y, &x, &z1, &z2) && (z1 > 50)) {

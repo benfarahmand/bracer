@@ -4,7 +4,8 @@
 #include <Arduino.h>
 #include "Button.h"
 #include "ESP32Time.h"
-#include <Adafruit_GPS.h>
+#include "Sensors.h"
+#include "Adafruit_ILI9341.h"
 
 //settings options: high power mode and low power mode
   //1. high power mode can collect data frequently. 
@@ -24,13 +25,14 @@ class Settings {
     Button syncTimeWithGPSButton;
     bool wereButtonsDrawn;
     bool powerModeHigh;
-    Adafruit_GPS gps;
+    Sensors mySensors;
     ESP32Time rtc;
     
   public:
     
     Settings();
-    void draw();
+    void init(Adafruit_ILI9341& tft, Sensors& s);
+    void draw(Adafruit_ILI9341& tft);
     void setHighPowerMode();
     void setLowPowerMode();
     void setTimeManually();
@@ -42,7 +44,7 @@ class Settings {
     void turnBluetoothOff();
     void turnBluetoothOn();
     void viewUpTime();
-    void checkForButtonClicks();
+    void checkForButtonClicks(uint16_t& x, uint16_t& y);
 
     
 };

@@ -5,21 +5,23 @@
 
 class Graph {
   private:
-  //thinking that the graph should show the last 10 minutes of data recorded at 30 second intervals
-    double CO2 [20];
-    double Humidity [20];
-    double Temperature [20];
-    double Battery [20];
-    double Latitude [20];
-    double Longitude [20];
-    unsigned long Time [20]; //this is epoch time
+    double CO2 [];
+    double Humidity [];
+    double Temperature [];
+    double Battery [];
+    double Latitude [];
+    double Longitude [];
+    unsigned long Time []; //this is epoch time
     unsigned long timer; //timer to keep track of when to store values
+    unsigned long startTime;
 //    float vOC []; //to do once i attached the sensor
 //    float Pulse []; //to do once i attach the sensor
   public:
     Graph();
+    void init(unsigned long t);
     void draw();
-    void setData();
+    void setData(unsigned long upt, unsigned long epochT, double carbon_dioxide, double hum, double temp, double lati, double longi, double bat);
+    void logData();
     
 };
 

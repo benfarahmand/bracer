@@ -5,6 +5,7 @@
 #include "Display.h"
 #include "Sensors.h"
 #include "Wireless.h"
+#include "Settings.h"
 
 //variables for battery readings
 const int MAX_ANALOG_VAL = 4095; //for battery measurement
@@ -19,6 +20,8 @@ const float MAX_BATTERY_VOLTAGE = 4.2; // Max LiPoly voltage of a 3.7 battery is
 ESP32Time rtc(4 * 3600);
 Sensors mySensors;
 Display myDisplay;
+Settings mySettings;
+Graph myGraph;
 uint32_t timer;
 int timeToUpdate = 1000;
 unsigned long startTime;
@@ -34,6 +37,8 @@ void setup() {
   startTime = rtc.getEpoch();
   mySensors.init();
   myDisplay.init();
+  mySettings.init(myDisplay.tft, mySensors);
+  myGraph.init(startTime);
   timer = millis();
   Serial.println("setup");
 }
@@ -49,10 +54,12 @@ void loop() { //we could improve performance by only reading sensors and drawing
     //pass data
     myDisplay.draw(rtc, mySensors, getBatteryInfo(), getUpTime(), mySensors.getGPSFix());
     //if more than some seconds have passed, log the data
+    //unsigned long upt, unsigned long epochT, double carbon_dioxide, double hum, double temp, double lati, double longi, double bat
+    myGraph.setData(getUpTime(), rtc.getEpoch(), );
   }
   delay(50);
   //check for button clicks
-  myDisplay.checkForButtonClicks();
+  myDisplay.checkForButtonClicks(mySettings);
 
 }
 
