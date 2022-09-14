@@ -19,8 +19,10 @@ void Graph::init(unsigned long t) {
 }
 
 void Graph::draw(Adafruit_ILI9341 &tft) {
-  //writeLine(int16_t x0, int16_t y0, int16_t x1, int16_t y1,uint16_t color)
-  //need to think about how to draw all the different lines
+  //will be using the following function extensively: writeLine(int16_t x0, int16_t y0, int16_t x1, int16_t y1,uint16_t color)
+  //need to find a list of colors
+  
+  //need to think about how to draw all the different graphs
   //the few potential graphs include:
   //battery over time
   //co2 over time
@@ -29,6 +31,8 @@ void Graph::draw(Adafruit_ILI9341 &tft) {
   //maybe co2, temp, and hum can be combined into one graph with different colored lines. need to think about how this will work...
   //maybe even have a graph that shows the last 10 minutes of GPS coordinates where  longitude = x, and latitude = y
   //if there are multiple graphs, we need a way to switch between them. maybe some buttons
+
+  //eventually once the vOC and pulse sensors are also connected, will need to include these graphs too
 }
 
 void Graph::setData(unsigned long upt, unsigned long epochT, double carbon_dioxide, double hum, double temp, double lati, double longi, double bat) {
