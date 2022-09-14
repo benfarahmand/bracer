@@ -147,7 +147,7 @@ void Display::drawHomeScreen(ESP32Time& rtc, Sensors& s, String batteryDetails, 
   tft.print(gpsFix);
 }
 
-void Display::draw(ESP32Time& rtc, Sensors& s, String batteryDetails, String upTime, String gpsFix) {
+void Display::draw(ESP32Time& rtc, Sensors& s, Graph& myGraph, Settings& mySettings, String batteryDetails, String upTime, String gpsFix) {
   if (!wasScreenCleared) {
     clearScreen();
   }
@@ -155,10 +155,10 @@ void Display::draw(ESP32Time& rtc, Sensors& s, String batteryDetails, String upT
     drawHomeScreen(rtc, s, batteryDetails, upTime, gpsFix);
   }
   else if (screen == 1) {
-    drawSettingsScreen();
+    drawSettingsScreen(mySettings);
   }
   else if (screen == 2) {
-    drawGraphScreen();
+    drawGraphScreen(myGraph);
   }
   else {
     return;
@@ -166,7 +166,7 @@ void Display::draw(ESP32Time& rtc, Sensors& s, String batteryDetails, String upT
   drawButtons();
 }
 
-void Display::drawSettingsScreen() {
+void Display::drawSettingsScreen(Settings& mySettings) {
   tft.setCursor(0, 42);
   //settings options: high power mode and low power mode
   //1. high power mode can collect data frequently.
@@ -178,9 +178,10 @@ void Display::drawSettingsScreen() {
   //7. turn on/off BT for notifications?
   //8. show total up time and amount of battery voltage used, maybe this can be
   //9. Sync the time with GPS time
+  mySettings.draw(tft);
 }
 
-void Display::drawGraphScreen() {
+void Display::drawGraphScreen(Graph& myGraph) {
   tft.setCursor(0, 42);
   //the graph display will show time series data and can include the following:
   //1. CO2
@@ -189,7 +190,7 @@ void Display::drawGraphScreen() {
   //4. vOC
   //5. battery usage over time
   //6. pulse over time
-
+  myGraph.draw(tft);
 }
 
 void Display::clearScreen() {

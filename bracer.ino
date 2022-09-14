@@ -23,7 +23,7 @@ Display myDisplay;
 Settings mySettings;
 Graph myGraph;
 uint32_t timer;
-int timeToUpdate = 1000;
+int timeToUpdate = 500; //update screen every 500 milliseconds
 unsigned long startTime;
 
 
@@ -44,7 +44,11 @@ void setup() {
 }
 
 
-void loop() { //we could improve performance by only reading sensors and drawing to screen once a minute, but checking for button clicks on every loop
+//To Do: draw performance, potentially save battery life in the process:
+//we could improve loop performance by only reading sensors 
+//and then checking if there's anything new to draw to screen before updating the screen
+//will constantly need to check for button clicks
+void loop() { 
   if (millis() - timer > timeToUpdate) {
     timer = millis();
     //read data
@@ -52,10 +56,11 @@ void loop() { //we could improve performance by only reading sensors and drawing
     mySensors.readGPS();
 
     //pass data
-    myDisplay.draw(rtc, mySensors, getBatteryInfo(), getUpTime(), mySensors.getGPSFix());
+    myDisplay.draw(rtc, mySensors, myGraph, mySettings, getBatteryInfo(), getUpTime(), mySensors.getGPSFix());
     //if more than some seconds have passed, log the data
     //unsigned long upt, unsigned long epochT, double carbon_dioxide, double hum, double temp, double lati, double longi, double bat
-    myGraph.setData(getUpTime(), rtc.getEpoch(), mySensors.);
+    //before setting the data, we might need to wait for the GPS to have a fix on the latitude and longitude, or do we not worry about the gps fix?
+    myGraph.setData(getUpTime(), rtc.getEpoch(), mySensors.getCO2(), mySensors.getHumidity(), mySensors.getTemp(), mySensors.getLatitude(), mySensors.getLongitude(), getBatteryInfo());
   }
   delay(50);
   //check for button clicks

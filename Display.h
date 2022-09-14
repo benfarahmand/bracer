@@ -32,9 +32,9 @@ class Display {
     
     Display();
     void init();
-    void draw(ESP32Time& rtc, Sensors& s, Settings& mySettings, String batteryDetails, String upTime, String gpsFix);
+    void draw(ESP32Time& rtc, Sensors& s, Graph& myGraph, Settings& mySettings, String batteryDetails, String upTime, String gpsFix);
     void drawHomeScreen(ESP32Time& rtc, Sensors& s, String batteryDetails, String upTime, String gpsFix);
-    void drawGraphScreen();
+    void drawGraphScreen(Graph& myGraph);
     void drawSettingsScreen(Settings& mySettings);
     void turnOnBacklight();
     void turnOffBacklight();
