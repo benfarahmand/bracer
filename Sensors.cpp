@@ -58,6 +58,15 @@ void Sensors::initGPS() {
   //  GPS.println(PMTK_Q_RELEASE);
 }
 
+bool Sensors::getGPSFixBool(){
+  if((int)GPS.fix==0){
+    return false;
+  }
+  else {
+    return true;
+  }  
+}
+
 String Sensors::getGPSFix(){
   if((int)GPS.fix==0){
     return "No";
@@ -168,6 +177,40 @@ float Sensors::getTemp(){
 
 float Sensors::getHumidity(){
   return humidity;
+}
+
+float Sensors::getVOC(){
+  return voc;
+}
+
+float Sensors::getRawVocAdc(){
+  float rawADC = analogRead(vocPin);
+  return rawADC;
+}
+
+//https://github.com/DFRobot/DFRobot_MICS/blob/master/DFRobot_MICS.cpp
+//datasheet: https://www.mouser.com/datasheet/2/18/1084_Datasheet-MiCS-5524-rev-8-1144838.pdf
+//need to figure out how to convert from voltage reading to ppm
+void Sensors::readVOC(){
+  float rawADC = getRawVocAdc();
+  float sensorResistance = (4095.0 - rawADC) / rawADC;
+  // Serial.print("Resistance: ");
+  // Serial.println(sensorResistance);
+
+  float r0_clean_air = 100; //value from the datasheet
+  // float r0_max = 1500;
+
+  float rs_r0 = log10(sensorResistance / r0_clean_air);
+
+  //PPM: x = 10 ^ ((y - b) / m)
+  
+  float slope = -0.85;
+  float b = 0.54;
+  float ppm = pow(10,((rs_r0-b)/slope));
+  
+  // Serial.print("PPM: ");
+  // Serial.println(ppm);  
+  voc = ppm;
 }
 
 void Sensors::readSCD41() {

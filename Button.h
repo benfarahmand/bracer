@@ -20,8 +20,8 @@ class Button {
     uint16_t tHeight;
   public:
     Button();
-    void initButton(Adafruit_ILI9341 tft, int16_t _x, int16_t _y, uint16_t _w, uint16_t _h, uint16_t _outline, uint16_t _fill, uint16_t _textcolor, String _text, uint8_t _textsize);
-    void drawButton(Adafruit_ILI9341 tft);
+    void initButton(Adafruit_ILI9341 &tft, int16_t _x, int16_t _y, uint16_t _w, uint16_t _h, uint16_t _outline, uint16_t _fill, uint16_t _textcolor, String _text, uint8_t _textsize);
+    void drawButton(Adafruit_ILI9341 &tft);
     bool contains(int16_t _x, int16_t _y);
 
 };

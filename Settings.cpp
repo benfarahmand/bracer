@@ -9,10 +9,11 @@
 
 Settings::Settings(): powerModeButton(), syncTimeWithGPSButton() {}
 
-void Settings::init(Adafruit_ILI9341& tft, Sensors& s) {
-  powerModeButton.initButton(tft, 200, 40, 80, 40, ILI9341_WHITE, ILI9341_BLACK, ILI9341_WHITE, "Power Mode", 2);
-  syncTimeWithGPSButton.initButton(tft, 200, 80, 80, 40, ILI9341_WHITE, ILI9341_BLACK, ILI9341_WHITE, "Sync Time", 2);
-  mySensors = s;
+void Settings::init(Adafruit_ILI9341 &tft, Sensors& s, ESP32Time& r) {
+  powerModeButton.initButton(tft, 200, 40, 120, 40, ILI9341_WHITE, ILI9341_BLACK, ILI9341_WHITE, "Power Mode", 2);
+  syncTimeWithGPSButton.initButton(tft, 200, 80, 120, 40, ILI9341_WHITE, ILI9341_BLACK, ILI9341_WHITE, "Sync Time", 2);
+  mySensors = &s;
+  rtc = &r;
   wereButtonsDrawn = false;
   powerModeHigh = true;
 }
@@ -33,9 +34,14 @@ void Settings::setLowPowerMode() {
 }
 
 void Settings::syncTimeWithGPSTime() {
+  Serial.print("Fix: ");
+  Serial.println(mySensors->getGPSFixBool());
+  Serial.print("CO2: ");
+  Serial.println(mySensors->getCO2());
   if(mySensors.GPS.fix){
     //setTime(int sc, int mn, int hr, int dy, int mt, int yr, int ms = 0);
-    rtc.setTime(mySensors.GPS.seconds, mySensors.GPS.minute, mySensors.GPS.hour, mySensors.GPS.day, mySensors.GPS.month, mySensors.GPS.year);//update time values from GPS module    
+    rtc.setTime(mySensors->GPS.seconds, mySensors->GPS.minute, mySensors->GPS.hour, mySensors->GPS.day, mySensors->GPS.month, mySensors->GPS.year);//update time values from GPS module    
+    Serial.println("rtc updated");
   }
 }
 
@@ -68,6 +74,7 @@ void Settings::checkForButtonClicks(uint16_t& x, uint16_t& y) {
     return;
   }
   if (syncTimeWithGPSButton.contains(x, y)) {
+    Serial.println("sync time clicked");
     syncTimeWithGPSTime();
     return;
   }

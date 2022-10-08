@@ -35,7 +35,7 @@ class Display {
     void draw(ESP32Time& rtc, Sensors& s, Graph& myGraph, Settings& mySettings, String batteryDetails, String upTime, String gpsFix);
     void drawHomeScreen(ESP32Time& rtc, Sensors& s, String batteryDetails, String upTime, String gpsFix);
     void drawGraphScreen(Graph& myGraph);
-    void drawSettingsScreen(Settings& mySettings);
+    void drawSettingsScreen(Settings& mySettings, ESP32Time& rtc);
     void turnOnBacklight();
     void turnOffBacklight();
     void checkForButtonClicks(Settings& settingsScreen);

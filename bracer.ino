@@ -37,7 +37,7 @@ void setup() {
   startTime = rtc.getEpoch();
   mySensors.init();
   myDisplay.init();
-  mySettings.init(myDisplay.tft, mySensors);
+  mySettings.init(myDisplay.tft, mySensors, rtc);
   myGraph.init(startTime);
   timer = millis();
   Serial.println("setup");
@@ -54,13 +54,14 @@ void loop() {
     //read data
     mySensors.readSCD41();
     mySensors.readGPS();
+    mySensors.readVOC();
 
     //pass data
-    myDisplay.draw(rtc, mySensors, myGraph, mySettings, getBatteryInfo(), getUpTime(), mySensors.getGPSFix());
+    myDisplay.draw(rtc, mySensors, myGraph, mySettings, getBatteryString(), (String) getUpTime(), mySensors.getGPSFix());
     //if more than some seconds have passed, log the data
     //unsigned long upt, unsigned long epochT, double carbon_dioxide, double hum, double temp, double lati, double longi, double bat
     //before setting the data, we might need to wait for the GPS to have a fix on the latitude and longitude, or do we not worry about the gps fix?
-    myGraph.setData(getUpTime(), rtc.getEpoch(), mySensors.getCO2(), mySensors.getHumidity(), mySensors.getTemp(), mySensors.getLatitude(), mySensors.getLongitude(), getBatteryInfo());
+    myGraph.setData(getUpTime(), rtc.getEpoch(), mySensors.getCO2(), mySensors.getHumidity(), mySensors.getTemp(), mySensors.getLatitude(), mySensors.getLongitude(), getBatteryVoltage());
   }
   delay(50);
   //check for button clicks
@@ -68,7 +69,7 @@ void loop() {
 
 }
 
-String getBatteryInfo() {
+float getBatteryVoltage(){
   // A13 pin is not exposed on Huzzah32 board because it's tied to
   // measuring voltage level of battery. Note: you must
   // multiply the analogRead value by 2x to get the true battery
@@ -80,14 +81,19 @@ String getBatteryInfo() {
   // https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/peripherals/adc.html#adc-calibration
   // See also: https://bit.ly/2zFzfMT
   float voltageLevel = (rawValue / 4095.0) * 2 * 1.1 * 3.3; // calculate voltage level
+  return voltageLevel;
+}
+
+String getBatteryString() {
+  float voltageLevel = getBatteryVoltage();
   float batteryFraction = voltageLevel / MAX_BATTERY_VOLTAGE;
 
   return (String)"Bat:" + voltageLevel + ":" + (batteryFraction * 100) + "%   ";
 }
 
-String getUpTime(){
+unsigned long getUpTime(){
   unsigned long upTime = rtc.getEpoch() - startTime;
-  return (String) upTime;
+  return upTime;
 }
 
 

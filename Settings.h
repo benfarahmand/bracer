@@ -25,13 +25,13 @@ class Settings {
     Button syncTimeWithGPSButton;
     bool wereButtonsDrawn;
     bool powerModeHigh;
-    Sensors mySensors;
-    ESP32Time rtc;
+    Sensors* mySensors;
+    ESP32Time* rtc;
     
   public:
     
     Settings();
-    void init(Adafruit_ILI9341& tft, Sensors& s);
+    void init(Adafruit_ILI9341& tft, Sensors& s, ESP32Time& r);
     void draw(Adafruit_ILI9341& tft);
     void setHighPowerMode();
     void setLowPowerMode();

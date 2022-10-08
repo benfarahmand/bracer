@@ -12,6 +12,8 @@ class Sensors {
     uint16_t co2;
     float temperature;
     float humidity;
+    float voc;
+    int vocPin = 36;
     int lowPowerTimeDelay;
     bool isLowPower;
   public:
@@ -30,15 +32,19 @@ class Sensors {
     //Atmospheric Sensors
     void initSCD41();
     void readSCD41();
+    void readVOC();
     //add vOC sensor
     uint16_t getCO2();
     float getTemp();
     float getHumidity();
+    float getVOC();
+    float getRawVocAdc();
 
     //GPS Sensor
     void initGPS();
     void readGPS();
     String getGPSFix();
+    bool getGPSFixBool();
     void getGPSTime();
     double getLatitude();
     double getLongitude();

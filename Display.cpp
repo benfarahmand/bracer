@@ -131,6 +131,12 @@ void Display::drawHomeScreen(ESP32Time& rtc, Sensors& s, String batteryDetails, 
   tft.print("CO2:");
   tft.print(s.getCO2());
   tft.println("  ");
+  tft.print("vOC:");
+  tft.print(s.getVOC());
+  tft.println("  ");
+  tft.print("raw ADC vOC:");
+  tft.print(s.getRawVocAdc());
+  tft.println("  ");  
   tft.print("Temp:");
   tft.print(s.getTemp());
   tft.println("  ");
@@ -155,7 +161,7 @@ void Display::draw(ESP32Time& rtc, Sensors& s, Graph& myGraph, Settings& mySetti
     drawHomeScreen(rtc, s, batteryDetails, upTime, gpsFix);
   }
   else if (screen == 1) {
-    drawSettingsScreen(mySettings);
+    drawSettingsScreen(mySettings, rtc);
   }
   else if (screen == 2) {
     drawGraphScreen(myGraph);
@@ -166,7 +172,7 @@ void Display::draw(ESP32Time& rtc, Sensors& s, Graph& myGraph, Settings& mySetti
   drawButtons();
 }
 
-void Display::drawSettingsScreen(Settings& mySettings) {
+void Display::drawSettingsScreen(Settings& mySettings, ESP32Time& rtc) {
   tft.setCursor(0, 42);
   //settings options: high power mode and low power mode
   //1. high power mode can collect data frequently.
@@ -178,6 +184,11 @@ void Display::drawSettingsScreen(Settings& mySettings) {
   //7. turn on/off BT for notifications?
   //8. show total up time and amount of battery voltage used, maybe this can be
   //9. Sync the time with GPS time
+  tft.setTextSize(textSize);
+  tft.println(rtc.getDate());
+  tft.setTextSize(textSize * 2);
+  tft.println(rtc.getTime());
+  tft.setTextSize(textSize);
   mySettings.draw(tft);
 }
 

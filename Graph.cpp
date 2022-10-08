@@ -4,18 +4,22 @@
 
 Graph::Graph() {}
 
+// Graph::~Graph(){
+//   delete[] Humidity;
+// }
+
 void Graph::init(unsigned long t) {
-  arrayStorageCounter = 0;
-  storageInterval = 30; //record the data once every 30 seconds
-  arrayLength = 600 / storageInterval; //i'm thinking  the graph should show the last 10 minutes of data. therefore, formula for # of indexes is (600 seconds / storage interval)
+  // arrayStorageCounter = 0;
+  // storageInterval = 30; //record the data once every 30 seconds
+  // arrayLength = 600 / storageInterval; //i'm thinking  the graph should show the last 10 minutes of data. therefore, formula for # of indexes is (600 seconds / storage interval)
   startTime = t;
-  CO2 [arrayLength];
-  Humidity [arrayLength];
-  Temperature [arrayLength];
-  Battery [arrayLength];
-  Latitude [arrayLength];
-  Longitude [arrayLength];
-  Time [arrayLength]; //this is epoch time
+  // CO2 [arrayLength];
+  // Humidity[arrayLength];
+  // Temperature [arrayLength];
+  // Battery [arrayLength];
+  // Latitude [arrayLength];
+  // Longitude [arrayLength];
+  // Time [arrayLength]; //this is epoch time
 }
 
 void Graph::draw(Adafruit_ILI9341 &tft) {
@@ -33,9 +37,18 @@ void Graph::draw(Adafruit_ILI9341 &tft) {
   //if there are multiple graphs, we need a way to switch between them. maybe some buttons
 
   //eventually once the vOC and pulse sensors are also connected, will need to include these graphs too
+  int16_t x0 = 0;
+  int16_t y0 = 220;
+  int16_t graphWidth = 100;
+  int16_t graphHeight = 100;
+  tft.writeLine(x0, y0, x0, y0-graphHeight, ILI9341_WHITE);
+  tft.writeLine(x0, y0, x0+graphWidth, y0, ILI9341_WHITE);
+  // for(int i = 0 ; i < arrayLength ; i++){
+
+  // }
 }
 
-void Graph::setData(unsigned long upt, unsigned long epochT, double carbon_dioxide, double hum, double temp, double lati, double longi, double bat) {
+void Graph::setData(unsigned long upt, unsigned long epochT, uint16_t carbon_dioxide, double hum, double temp, double lati, double longi, double bat) {
   //logic description:
   //if uptime is at specific interval, then log the uptime, then reset the log timer
   if (upt - timer > storageInterval) {
@@ -69,4 +82,5 @@ void Graph::setData(unsigned long upt, unsigned long epochT, double carbon_dioxi
   }
 }
 
+//a function to save the data to the sd card
 void Graph::saveData(){}
