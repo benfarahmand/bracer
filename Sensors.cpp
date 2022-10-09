@@ -32,6 +32,9 @@ void Sensors::init() {
   initSCD41();
 }
 
+//Datasheet for the GPS module I'm using: https://cdn-learn.adafruit.com/assets/assets/000/084/295/original/CD_PA1010D_Datasheet_v.03.pdf?1573833002
+//this datasheet has commands for how to go into low power mode
+
 void Sensors::initGPS() {
   if (GPS.standby()) {
     GPS.wakeup();
