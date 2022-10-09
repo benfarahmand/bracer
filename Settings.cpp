@@ -38,10 +38,11 @@ void Settings::syncTimeWithGPSTime() {
   Serial.println(mySensors->getGPSFixBool());
   Serial.print("CO2: ");
   Serial.println(mySensors->getCO2());
-  if(mySensors.GPS.fix){
+  if(mySensors->getGPSFixBool()){
     //setTime(int sc, int mn, int hr, int dy, int mt, int yr, int ms = 0);
-    rtc.setTime(mySensors->GPS.seconds, mySensors->GPS.minute, mySensors->GPS.hour, mySensors->GPS.day, mySensors->GPS.month, mySensors->GPS.year);//update time values from GPS module    
+    rtc->setTime(mySensors->GPS.seconds, mySensors->GPS.minute, mySensors->GPS.hour, mySensors->GPS.day, mySensors->GPS.month, mySensors->GPS.year);//update time values from GPS module    
     Serial.println("rtc updated");
+    delay(100);
   }
 }
 

@@ -38,7 +38,7 @@ class Sensors {
     float getTemp();
     float getHumidity();
     float getVOC();
-    float getRawVocAdc();
+    int getRawVocAdc();
 
     //GPS Sensor
     void initGPS();

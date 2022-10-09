@@ -183,8 +183,10 @@ float Sensors::getVOC(){
   return voc;
 }
 
-float Sensors::getRawVocAdc(){
-  float rawADC = analogRead(vocPin);
+int Sensors::getRawVocAdc(){
+  int rawADC = analogRead(vocPin);
+  Serial.print("raw ADC: ");
+  Serial.println(rawADC);
   return rawADC;
 }
 
@@ -192,15 +194,15 @@ float Sensors::getRawVocAdc(){
 //datasheet: https://www.mouser.com/datasheet/2/18/1084_Datasheet-MiCS-5524-rev-8-1144838.pdf
 //need to figure out how to convert from voltage reading to ppm
 void Sensors::readVOC(){
-  float rawADC = getRawVocAdc();
-  float sensorResistance = (4095.0 - rawADC) / rawADC;
+  float rawADC = static_cast<float>(getRawVocAdc());
+  float sensorResistance = ((4095.0 - rawADC) / rawADC);
   // Serial.print("Resistance: ");
   // Serial.println(sensorResistance);
 
   float r0_clean_air = 100; //value from the datasheet
   // float r0_max = 1500;
 
-  float rs_r0 = log10(sensorResistance / r0_clean_air);
+  float rs_r0 = log10( sensorResistance / r0_clean_air);
 
   //PPM: x = 10 ^ ((y - b) / m)
   
@@ -211,6 +213,7 @@ void Sensors::readVOC(){
   // Serial.print("PPM: ");
   // Serial.println(ppm);  
   voc = ppm;
+  // voc = 0;
 }
 
 void Sensors::readSCD41() {
