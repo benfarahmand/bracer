@@ -36,9 +36,9 @@ void Sensors::init() {
 //this datasheet has commands for how to go into low power mode
 
 void Sensors::initGPS() {
-  if (GPS.standby()) {
-    GPS.wakeup();
-  }
+//  if (GPS.standby()) {
+//    GPS.wakeup();
+//  }
   // 9600 NMEA is the default baud rate for Adafruit MTK GPS's- some use 4800
   GPS.begin(0x10);  // The I2C address to use is 0x10
   // uncomment this line to turn on RMC (recommended minimum) and GGA (fix data) including altitude
@@ -59,6 +59,34 @@ void Sensors::initGPS() {
 
   // Ask for firmware version
   //  GPS.println(PMTK_Q_RELEASE);
+}
+
+/* NOTES FOR LOW POWER MODE:
+Enter periodic mode by sending the following command: $PMTK225,Type, Run_time, Sleep_time,2nd_Run_time,2nd_Sleep_time*checksum
+Where:
+- Type = 1: Periodic backup mode, Type = 2 : Periodic standby mode
+- Run time: Full Power period (ms)
+- Sleep time: Standby period (ms)
+- 2nd Run time: Full Power period (ms) for extended acquisition if GNSS acquisition fails during Run time.
+- 2nd Sleep time: Standby period (ms) for extended sleep if GNSS acquisition fails during Runtime.
+Example: $PMTK225,2,4000,15000,24000,90000*16: periodic mode with 4 second navigation and 15 second sleep.
+ */
+void Sensors::GPSLowPowerMode(){
+  GPS.sendCommand("$PMTK225,2,1000,10000,24000,90000*16");// 0.1HZ?
+}
+
+void Sensors::GPSHighPowerMode(){
+  GPS.sendCommand("$PMTK225,0*2B");
+}
+
+void Sensors::GPSstandBy(){
+  GPS.sendCommand("$PMTK161,0*28");
+}
+
+void Sensors::GPSWakeUp(){
+  //to wake up, GPS will go into high power mode... 
+  //in the future we can remember the last state we were in and then wake up back to that state
+  GPS.sendCommand("$PMTK225,0*2B");
 }
 
 bool Sensors::getGPSFixBool(){
@@ -152,18 +180,29 @@ void Sensors::initSCD41() {
 
 void Sensors::highPowerMode(){
   isLowPower = false;
+  GPSHighPowerMode():
 }
 
 void Sensors::lowPowerMode(){
   //collect measurements once in a while, maybe once every minute
   isLowPower = true;
+  GPSLowPowerMode():
+}
+
+void Sensors::SCD41LowPowerMode(){
+  
+}
+
+void Sensors::SCD41HighPowerMode(){
+  
 }
 
 //currently turning off GPS doesn't allow it to come back online
 void Sensors::turnOffSensors() {
   scd4x.stopPeriodicMeasurement(); // stop co2, temp, and humidity sensor. save some energy
   scd4x.powerDown(); //i wonder if this works
-  GPS.standby(); //put GPS on standby. save some energy. this causes some issue...
+  GPSstandBy();
+//  GPS.standby(); //put GPS on standby. save some energy. this causes some issue...
 }
 
 void Sensors::turnOnSensors(){

@@ -26,8 +26,8 @@ class Sensors {
     void init();
     void highPowerMode();
     void lowPowerMode();
-    void turnOffSensors();
-    void turnOnSensors();
+    void turnOffSensors(); //doesn't work
+    void turnOnSensors(); //doesn't work
 
     //Atmospheric Sensors
     void initSCD41();
@@ -39,6 +39,8 @@ class Sensors {
     float getHumidity();
     float getVOC();
     int getRawVocAdc();
+    void SCD41LowPowerMode();
+    void SCD41HighPowerMode();
 
     //GPS Sensor
     void initGPS();
@@ -49,6 +51,10 @@ class Sensors {
     double getLatitude();
     double getLongitude();
     void syncTimeWithGPSTime();
+    void GPSWakeUp();
+    void GPSstandBy();
+    void GPSHighPowerMode();
+    void GPSLowPowerMode();
 
 
     //Heart Beat Sensor

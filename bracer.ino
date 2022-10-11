@@ -7,6 +7,9 @@
 #include "Wireless.h"
 #include "Settings.h"
 
+//for tracking how many times the ESP32 has woken up
+RTC_DATA_ATTR int bootCount = 0;
+
 //variables for battery readings
 const int MAX_ANALOG_VAL = 4095; //for battery measurement
 const float MAX_BATTERY_VOLTAGE = 4.2; // Max LiPoly voltage of a 3.7 battery is 4.2
@@ -40,7 +43,11 @@ void setup() {
   mySettings.init(myDisplay.tft, mySensors, rtc);
   myGraph.init(startTime);
   timer = millis();
+  if(bootCount > 0){
+    
+  }
   Serial.println("setup");
+  bootCount = bootCount + 1;
 }
 
 
@@ -113,6 +120,7 @@ void deepSleep(Adafruit_ILI9341 tft) {
   esp_sleep_enable_ext1_wakeup(BUTTON_PIN_BITMASK, ESP_EXT1_WAKEUP_ANY_HIGH);
   tft.println("Going to deep sleep now");
   delay(1000);
+  myDisplay.turnOffBacklight();
   tft.fillScreen(ILI9341_BLACK);
   esp_deep_sleep_start(); //loses all memory of things
 }
@@ -124,7 +132,7 @@ void lightSleep(Adafruit_ILI9341 tft) {
   //put various sensors to sleep
   tft.println("Shifting sensors to low power.");
   //  turnOffI2CSensors();
-
+  
   // need to check if Bluetooth and Wifi is on and turn them off
 
   //  esp_sleep_enable_ext0_wakeup(GPIO_NUM_32, 1); //1 = High, 0 = Low
@@ -133,6 +141,7 @@ void lightSleep(Adafruit_ILI9341 tft) {
   esp_sleep_enable_ext1_wakeup(BUTTON_PIN_BITMASK, ESP_EXT1_WAKEUP_ANY_HIGH);
   tft.println("Going to light sleep now");
   delay(1000);
+  myDisplay.turnOffBacklight();
   tft.fillScreen(ILI9341_BLACK);
   esp_light_sleep_start(); //stores memory
 }
