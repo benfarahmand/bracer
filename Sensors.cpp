@@ -2,6 +2,7 @@
 #include <SensirionI2CScd4x.h>
 #include <Adafruit_GPS.h>
 #include <Wire.h>
+#include <Adafruit_BME680.h>
 
 //scd41 code: https://github.com/Sensirion/arduino-i2c-scd4x/blob/master/src/SensirionI2CScd4x.cpp
 //GPS code: https://github.com/adafruit/Adafruit_GPS/blob/master/src/Adafruit_GPS.cpp
@@ -10,9 +11,11 @@
 // Set to 'true' if you want to debug and listen to the raw GPS sentences
 #define GPSECHO false
 
+#define SEALEVELPRESSURE_HPA (1013.25)
+
 //Sensors::Sensors() {}
 
-Sensors::Sensors(): GPS(&Wire), scd4x() {};
+Sensors::Sensors(): GPS(&Wire), scd4x(), bme() {};
 //Sensors():scd4x(){};
 
 
@@ -30,11 +33,11 @@ void Sensors::init() {
 //  timer = millis();
   initGPS();
   initSCD41();
+  initBME();
 }
 
 //Datasheet for the GPS module I'm using: https://cdn-learn.adafruit.com/assets/assets/000/084/295/original/CD_PA1010D_Datasheet_v.03.pdf?1573833002
 //this datasheet has commands for how to go into low power mode
-
 void Sensors::initGPS() {
 //  if (GPS.standby()) {
 //    GPS.wakeup();
@@ -180,13 +183,13 @@ void Sensors::initSCD41() {
 
 void Sensors::highPowerMode(){
   isLowPower = false;
-  GPSHighPowerMode():
+  GPSHighPowerMode();
 }
 
 void Sensors::lowPowerMode(){
   //collect measurements once in a while, maybe once every minute
   isLowPower = true;
-  GPSLowPowerMode():
+  GPSLowPowerMode();
 }
 
 void Sensors::SCD41LowPowerMode(){
@@ -221,41 +224,107 @@ float Sensors::getHumidity(){
   return humidity;
 }
 
+//https://github.com/G6EJD/BME680-Example/blob/master/ESP32_bme680_CC_demo_03.ino
+//datasheet: https://cdn-shop.adafruit.com/product-files/3660/BME680.pdf
+void Sensors::initBME(){
+  if (!bme.begin()) {
+    // Serial.println("Could not find a valid BME680 sensor, check wiring!");
+    while (1);
+  }
+  
+  // Set up oversampling and filter initialization
+  bme.setTemperatureOversampling(BME680_OS_8X);
+  bme.setHumidityOversampling(BME680_OS_2X);
+  bme.setPressureOversampling(BME680_OS_4X);
+  bme.setIIRFilterSize(BME680_FILTER_SIZE_3);
+  bme.setGasHeater(320, 150); // 320*C for 150 ms
+
+  getGasReference();
+}
+
 float Sensors::getVOC(){
   return voc;
 }
 
-int Sensors::getRawVocAdc(){
-  int rawADC = analogRead(vocPin);
-  Serial.print("raw ADC: ");
-  Serial.println(rawADC);
-  return rawADC;
+float Sensors::getPressure(){
+  return bme.pressure / 100.0;
 }
 
 //https://github.com/DFRobot/DFRobot_MICS/blob/master/DFRobot_MICS.cpp
 //datasheet: https://www.mouser.com/datasheet/2/18/1084_Datasheet-MiCS-5524-rev-8-1144838.pdf
 //need to figure out how to convert from voltage reading to ppm
-void Sensors::readVOC(){
-  float rawADC = static_cast<float>(getRawVocAdc());
-  float sensorResistance = ((4095.0 - rawADC) / rawADC);
-  // Serial.print("Resistance: ");
-  // Serial.println(sensorResistance);
+void Sensors::readBME(){
+  if (! bme.performReading()) {
+    // Serial.println("Failed to perform reading :(");
+    return;
+  }
 
-  float r0_clean_air = 100; //value from the datasheet
-  // float r0_max = 1500;
-
-  float rs_r0 = log10( sensorResistance / r0_clean_air);
-
-  //PPM: x = 10 ^ ((y - b) / m)
+  //calculate humidity score
+  float current_humidity = bme.humidity;
+  if (current_humidity >= 38 && current_humidity <= 42) // Humidity +/-5% around optimum
+    humidity_score = 0.25 * 100;
+  else
+  { // Humidity is sub-optimal
+    if (current_humidity < 38)
+      humidity_score = 0.25 / hum_reference * current_humidity * 100;
+    else
+    {
+      humidity_score = ((-0.25 / (100 - hum_reference) * current_humidity) + 0.416666) * 100;
+    }
+  }
   
-  float slope = -0.85;
-  float b = 0.54;
-  float ppm = pow(10,((rs_r0-b)/slope));
+  //calculate gas score
+  gas_score = (0.75 / (gas_upper_limit - gas_lower_limit) * gas_reference - (gas_lower_limit * (0.75 / (gas_upper_limit - gas_lower_limit)))) * 100.00;
+  if (gas_score > 75) gas_score = 75; // Sometimes gas readings can go outside of expected scale maximum
+  if (gas_score <  0) gas_score = 0;  // Sometimes gas readings can go outside of expected scale minimum
+
+  //Combine results for the final IAQ index value (0-100% where 100% is good quality air)
+  float air_quality_score = humidity_score + gas_score;
+  Serial.println(" comprised of " + String(humidity_score) + "% Humidity and " + String(gas_score) + "% Gas");
+  if ((getgasreference_count++) % 5 == 0) getGasReference();
+  Serial.println(CalculateIAQ(air_quality_score));
   
-  // Serial.print("PPM: ");
-  // Serial.println(ppm);  
-  voc = ppm;
-  // voc = 0;
+  voc = bme.gas_resistance / 1000.0;
+  
+  // float rawADC = static_cast<float>(getRawVocAdc());
+  // float sensorResistance = ((4095.0 - rawADC) / rawADC);
+
+  // float r0_clean_air = 100; //value from the datasheet
+  // // float r0_max = 1500;
+
+  // float rs_r0 = log10( sensorResistance / r0_clean_air);
+
+  // //PPM: x = 10 ^ ((y - b) / m)
+  
+  // float slope = -0.85;
+  // float b = 0.54;
+  // float ppm = pow(10,((rs_r0-b)/slope));
+  
+  // // Serial.print("PPM: ");
+  // // Serial.println(ppm);  
+  // voc = ppm;
+}
+
+String Sensors::calculateIAQ(int score) {
+  String IAQ_text = "air quality is ";
+  score = (100 - score) * 5;
+  if      (score >= 301)                  IAQ_text += "Hazardous";
+  else if (score >= 201 && score <= 300 ) IAQ_text += "Very Unhealthy";
+  else if (score >= 176 && score <= 200 ) IAQ_text += "Unhealthy";
+  else if (score >= 151 && score <= 175 ) IAQ_text += "Unhealthy for Sensitive Groups";
+  else if (score >=  51 && score <= 150 ) IAQ_text += "Moderate";
+  else if (score >=  00 && score <=  50 ) IAQ_text += "Good";
+  Serial.print("IAQ Score = " + String(score) + ", ");
+  return IAQ_text;
+}
+
+void Sensors::getGasReference() {
+  // Now run the sensor for a burn-in period, then use combination of relative humidity and gas resistance to estimate indoor air quality as a percentage.
+  int readings = 10;
+  for (int i = 1; i <= readings; i++) { // read gas for 10 x 0.150mS = 1.5secs
+    gas_reference += bme.readGas();
+  }
+  gas_reference = gas_reference / readings;
 }
 
 void Sensors::readSCD41() {

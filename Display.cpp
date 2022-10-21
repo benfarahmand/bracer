@@ -134,9 +134,9 @@ void Display::drawHomeScreen(ESP32Time& rtc, Sensors& s, String batteryDetails, 
   tft.print("vOC:");
   tft.print(s.getVOC());
   tft.println("  ");
-  tft.print("raw ADC vOC:");
-  tft.print(s.getRawVocAdc());
-  tft.println("  ");  
+  tft.print("Pres:");
+  tft.print(s.getPressure());
+  tft.println(" hPa  ");  
   tft.print("Temp:");
   tft.print(s.getTemp());
   tft.println("  ");

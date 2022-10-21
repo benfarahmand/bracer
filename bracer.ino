@@ -61,7 +61,7 @@ void loop() {
     //read data
     mySensors.readSCD41();
     mySensors.readGPS();
-    mySensors.readVOC();
+    mySensors.readBME();
 
     //pass data
     myDisplay.draw(rtc, mySensors, myGraph, mySettings, getBatteryString(), (String) getUpTime(), mySensors.getGPSFix());
