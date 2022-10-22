@@ -26,7 +26,7 @@ Display myDisplay;
 Settings mySettings;
 Graph myGraph;
 uint32_t timer;
-int timeToUpdate = 500; //update screen every 500 milliseconds
+int timeToUpdate = 1000; //update screen & sensors every 1 second
 unsigned long startTime;
 
 
@@ -40,7 +40,7 @@ void setup() {
   startTime = rtc.getEpoch();
   mySensors.init();
   myDisplay.init();
-  mySettings.init(myDisplay.tft, mySensors, rtc);
+  mySettings.init(myDisplay.tft, mySensors, rtc, startTime);
   myGraph.init(startTime);
   timer = millis();
   if(bootCount > 0){
@@ -63,17 +63,23 @@ void loop() {
     mySensors.readGPS();
     mySensors.readBME();
 
-    //pass data
-    myDisplay.draw(rtc, mySensors, myGraph, mySettings, getBatteryString(), (String) getUpTime(), mySensors.getGPSFix());
+    if(myDisplay.backLightOn) {
+      myDisplay.draw(rtc, mySensors, myGraph, mySettings, getBatteryString(), (String) mySettings.getUpTime(), mySensors.getGPSFix());
+    }
     //if more than some seconds have passed, log the data
     //unsigned long upt, unsigned long epochT, double carbon_dioxide, double hum, double temp, double lati, double longi, double bat
     //before setting the data, we might need to wait for the GPS to have a fix on the latitude and longitude, or do we not worry about the gps fix?
-    myGraph.setData(getUpTime(), rtc.getEpoch(), mySensors.getCO2(), mySensors.getHumidity(), mySensors.getTemp(), mySensors.getLatitude(), mySensors.getLongitude(), getBatteryVoltage());
+    myGraph.setData(mySettings.getUpTime(), rtc.getEpoch(), mySensors.getCO2(), mySensors.getHumidity(), mySensors.getTemp(), mySensors.getLatitude(), mySensors.getLongitude(), getBatteryVoltage());
   }
-  delay(50);
-  //check for button clicks
-  myDisplay.checkForButtonClicks(mySettings);
 
+  // delay(50);
+  //check for button clicks
+  if(myDisplay.checkForButtonClicks(mySettings, myGraph)){
+    myDisplay.draw(rtc, mySensors, myGraph, mySettings, getBatteryString(), (String) getUpTime(), mySensors.getGPSFix());
+  };
+  myDisplay.turnOffBacklightAfterSomeTime();
+  //check of analog button press... what should we do with the analog press? maybe go to light sleep
+  analogRead(BUTTON_PIN_BITMASK);
 }
 
 float getBatteryVoltage(){
@@ -98,10 +104,7 @@ String getBatteryString() {
   return (String)"Bat:" + voltageLevel + ":" + (batteryFraction * 100) + "%   ";
 }
 
-unsigned long getUpTime(){
-  unsigned long upTime = rtc.getEpoch() - startTime;
-  return upTime;
-}
+
 
 
 void deepSleep(Adafruit_ILI9341 tft) {
@@ -109,7 +112,7 @@ void deepSleep(Adafruit_ILI9341 tft) {
   tft.setCursor(0, 0);
 
   //put various sensors to sleep
-  tft.println("Shifting sensors to low power.");
+  // tft.println("Shifting sensors to low power.");
   //  turnOffI2CSensors();
 
   // need to check if Bluetooth and Wifi is on and turn them off
@@ -121,7 +124,6 @@ void deepSleep(Adafruit_ILI9341 tft) {
   tft.println("Going to deep sleep now");
   delay(1000);
   myDisplay.turnOffBacklight();
-  tft.fillScreen(ILI9341_BLACK);
   esp_deep_sleep_start(); //loses all memory of things
 }
 
@@ -130,7 +132,7 @@ void lightSleep(Adafruit_ILI9341 tft) {
   tft.setCursor(0, 0);
 
   //put various sensors to sleep
-  tft.println("Shifting sensors to low power.");
+  // tft.println("Shifting sensors to low power.");
   //  turnOffI2CSensors();
   
   // need to check if Bluetooth and Wifi is on and turn them off
@@ -142,6 +144,5 @@ void lightSleep(Adafruit_ILI9341 tft) {
   tft.println("Going to light sleep now");
   delay(1000);
   myDisplay.turnOffBacklight();
-  tft.fillScreen(ILI9341_BLACK);
   esp_light_sleep_start(); //stores memory
 }

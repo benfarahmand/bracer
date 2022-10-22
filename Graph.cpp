@@ -43,6 +43,7 @@ void Graph::draw(Adafruit_ILI9341 &tft) {
   int16_t graphHeight = 100;
   tft.writeLine(x0, y0, x0, y0-graphHeight, ILI9341_WHITE);
   tft.writeLine(x0, y0, x0+graphWidth, y0, ILI9341_WHITE);
+  tft.writeLine(50,50,100,100,ILI9341_WHITE);
   // for(int i = 0 ; i < arrayLength ; i++){
 
   // }
@@ -84,3 +85,7 @@ void Graph::setData(unsigned long upt, unsigned long epochT, uint16_t carbon_dio
 
 //a function to save the data to the sd card
 void Graph::saveData(){}
+
+bool Graph::checkForButtonClicks(uint16_t& x, uint16_t& y) {
+  return false;
+}  

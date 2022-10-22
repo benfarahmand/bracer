@@ -34,6 +34,7 @@ public:
   void draw(Adafruit_ILI9341 &tft);
   void setData(unsigned long upt, unsigned long epochT, uint16_t carbon_dioxide, double hum, double temp, double lati, double longi, double bat);
   void saveData();
+  bool checkForButtonClicks(uint16_t& x, uint16_t& y);
 };
 
 #endif

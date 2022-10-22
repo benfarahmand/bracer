@@ -18,7 +18,6 @@ class Display {
     Button graphButton;
     bool wereButtonsDrawn = false;
     bool wasScreenCleared = false;
-    bool backLightOn = true;
     int textSize = 2;
     int screen; //0 = home, 1 = settings
     //touch screen calibration values
@@ -27,8 +26,11 @@ class Display {
     float screenWidth = 320; //pixel value
     float screenHeight = 240; //pixel value
     float xConvert, yConvert;
+    uint32_t displayTurnOffTimer;
+    int timeToTurnOffDisplay = 30000;//turn off screen after 30 seconds
   public:
     Adafruit_ILI9341 tft;
+    bool backLightOn = true;
     
     Display();
     void init();
@@ -38,9 +40,11 @@ class Display {
     void drawSettingsScreen(Settings& mySettings, ESP32Time& rtc);
     void turnOnBacklight();
     void turnOffBacklight();
-    void checkForButtonClicks(Settings& settingsScreen);
+    void checkForButtonClicks(Settings& settingsScreen, Graph& graphScreen);
     void drawButtons();
     void clearScreen();
+    void blackScreen();
+    void turnOffBacklightAfterSomeTime();
 };
 
 #endif

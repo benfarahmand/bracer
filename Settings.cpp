@@ -16,6 +16,7 @@ void Settings::init(Adafruit_ILI9341 &tft, Sensors& s, ESP32Time& r) {
   rtc = &r;
   wereButtonsDrawn = false;
   powerModeHigh = true;
+  startTime = r.getEpoch();
 }
 
 void Settings::draw(Adafruit_ILI9341 &tft) {
@@ -40,9 +41,10 @@ void Settings::syncTimeWithGPSTime() {
   Serial.println(mySensors->getCO2());
   if(mySensors->getGPSFixBool()){
     //setTime(int sc, int mn, int hr, int dy, int mt, int yr, int ms = 0);
+    //before syncing the time, need to adjust the start time value to compensate for the syncing of the time
+    unsigned long tempUpTime = getUpTime();
     rtc->setTime(mySensors->GPS.seconds, mySensors->GPS.minute, mySensors->GPS.hour, mySensors->GPS.day, mySensors->GPS.month, mySensors->GPS.year);//update time values from GPS module    
-    Serial.println("rtc updated");
-    delay(100);
+    startTime = rtc->getEpoch() - tempUpTime;
   }
 }
 
@@ -60,9 +62,12 @@ void Settings::turnBluetoothOff() {}
 
 void Settings::turnBluetoothOn() {}
 
-void Settings::viewUpTime() {} //not sure if i need this
+unsigned long Settings::getUpTime(){
+  unsigned long upTime = rtc->getEpoch() - startTime;
+  return upTime;
+}
 
-void Settings::checkForButtonClicks(uint16_t& x, uint16_t& y) {
+bool Settings::checkForButtonClicks(uint16_t& x, uint16_t& y) {
   if (powerModeButton.contains(x, y)) {
     if (powerModeHigh) {
       setLowPowerMode();
@@ -72,11 +77,12 @@ void Settings::checkForButtonClicks(uint16_t& x, uint16_t& y) {
       setHighPowerMode();
       powerModeHigh = true;
     }
-    return;
+    return true;
   }
   if (syncTimeWithGPSButton.contains(x, y)) {
     Serial.println("sync time clicked");
     syncTimeWithGPSTime();
-    return;
+    return true;
   }
+  return false;
 }

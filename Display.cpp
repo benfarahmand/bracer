@@ -12,21 +12,23 @@
 #define TFT_MISO 19
 #define TFT_MOSI 18
 #define TFT_CLK 5
-#define TFT_CS   16  // Chip select control pin
-#define TFT_DC   17  // Data Command control pin
-#define TFT_RST  21 // Reset pin (could connect to RST pin)
+#define TFT_CS 16   // Chip select control pin
+#define TFT_DC 17   // Data Command control pin
+#define TFT_RST 21  // Reset pin (could connect to RST pin)
 #define TFT_LIGHT 33
-#define TFT_CCS 32 //maybe need a separate class for reading and writing to the SD Card
+#define TFT_CCS 32  //maybe need a separate class for reading and writing to the SD Card
 
-Display::Display(): tft(TFT_CS, TFT_DC, TFT_MOSI, TFT_CLK, TFT_RST, TFT_MISO),
-  settingsButton(), homeButton(), graphButton() {}
+Display::Display()
+  : tft(TFT_CS, TFT_DC, TFT_MOSI, TFT_CLK, TFT_RST, TFT_MISO),
+    settingsButton(), homeButton(), graphButton() {}
 
 void Display::init() {
-  screen = 0; //0 = home, 1 = settings
-  minX = 0;//380;
+  screen = 0;  //0 = home, 1 = settings
+  minX = 0;    //380;
   maxX = 3684;
-  minY = 0;//585;
-  maxY = 3825; //value determined from touching the corners of the resistive touch screen
+  minY = 0;     //585;
+  maxY = 3825;  //value determined from touching the corners of the resistive touch screen
+  displayTurnOffTimer = millis();  
   //  screenWidth = 320; //pixel value
   //  screenHeight = 240; //pixel value
   xConvert = (screenWidth / (maxX - minX));
@@ -43,10 +45,10 @@ void Display::init() {
   digitalWrite(TFT_LIGHT, HIGH);
 
   homeButton.initButton(tft, 0, 0, 80, 40, ILI9341_WHITE, ILI9341_BLACK, ILI9341_WHITE, "Home", 2);
-  graphButton.initButton(tft, 80, 0, 120, 40,  ILI9341_WHITE, ILI9341_BLACK, ILI9341_WHITE, "Graph", 2);
+  graphButton.initButton(tft, 80, 0, 120, 40, ILI9341_WHITE, ILI9341_BLACK, ILI9341_WHITE, "Graph", 2);
   settingsButton.initButton(tft, 200, 0, 120, 40, ILI9341_WHITE, ILI9341_BLACK, ILI9341_WHITE, "Settings", 2);
 
-  if (!touch.begin()) { //wait for touch to begin
+  if (!touch.begin()) {  //wait for touch to begin
     while (1) {
       delay(10);
     }
@@ -56,10 +58,20 @@ void Display::init() {
 //used for saving battery power
 void Display::turnOffBacklight() {
   digitalWrite(TFT_LIGHT, LOW);
+  blackScreen(); //draw a black rectangle, no need to display text if light is off
+  backLightOn = false;
 }
 
 void Display::turnOnBacklight() {
   digitalWrite(TFT_LIGHT, HIGH);
+  backLightOn = true;
+  displayTurnOffTimer = millis();
+}
+
+void Display::turnOffBacklightAfterSomeTime() {
+  if ((millis() - displayTurnOffTimer > timeToTurnOffDisplay) && backLightOn) {
+    turnOffBacklight();
+  } 
 }
 
 void Display::drawButtons() {
@@ -72,7 +84,7 @@ void Display::drawButtons() {
   }
 }
 
-void Display::checkForButtonClicks(Settings& settingsScreen) {
+bool Display::checkForButtonClicks(Settings& settingsScreen, Graph& graphScreen) {
   uint16_t x, y, z1, z2;
   //due to screen being rotated, the x and y values are flipped
   if (touch.read_touch(&y, &x, &z1, &z2) && (z1 > 50)) {
@@ -86,7 +98,6 @@ void Display::checkForButtonClicks(Settings& settingsScreen) {
     //eventually it would be nice to have the accelerometer also control the backlight
     if (!backLightOn) {
       turnOnBacklight();
-      backLightOn = true;
     } else {
 
       //buttons for switching between screens
@@ -95,30 +106,34 @@ void Display::checkForButtonClicks(Settings& settingsScreen) {
         screen = 0;
         wasScreenCleared = false;
         wereButtonsDrawn = false;
-        return;
+        return true;
       }
       if (settingsButton.contains(x, y) && screen != 1) {
         Serial.println("settings screen");
         screen = 1;
         wasScreenCleared = false;
         wereButtonsDrawn = false;
-        return;
+        return true;
       }
       if (graphButton.contains(x, y) && screen != 2) {
         Serial.println("graph screen");
         screen = 2;
         wasScreenCleared = false;
         wereButtonsDrawn = false;
-        return;
+        return true;
       }
 
       //now check for specific screen buttons
-      if(screen == 1){
-        settingsScreen.checkForButtonClicks(x,y);
+      if (screen == 1) {
+        return settingsScreen.checkForButtonClicks(x, y);
       }
-      
+
+      if(screen == 2){
+        return graphScreen.checkForButtonClicks(x, y);
+      }
     }
   }
+  return false;
 }
 
 void Display::drawHomeScreen(ESP32Time& rtc, Sensors& s, String batteryDetails, String upTime, String gpsFix) {
@@ -136,7 +151,7 @@ void Display::drawHomeScreen(ESP32Time& rtc, Sensors& s, String batteryDetails, 
   tft.println("  ");
   tft.print("Pres:");
   tft.print(s.getPressure());
-  tft.println(" hPa  ");  
+  tft.println(" hPa  ");
   tft.print("Temp:");
   tft.print(s.getTemp());
   tft.println("  ");
@@ -159,14 +174,11 @@ void Display::draw(ESP32Time& rtc, Sensors& s, Graph& myGraph, Settings& mySetti
   }
   if (screen == 0) {
     drawHomeScreen(rtc, s, batteryDetails, upTime, gpsFix);
-  }
-  else if (screen == 1) {
+  } else if (screen == 1) {
     drawSettingsScreen(mySettings, rtc);
-  }
-  else if (screen == 2) {
+  } else if (screen == 2) {
     drawGraphScreen(myGraph);
-  }
-  else {
+  } else {
     return;
   }
   drawButtons();
@@ -209,5 +221,10 @@ void Display::clearScreen() {
   //instead of filling the entire screen with black,
   //we can draw a rect over the top portion of the screen and not have to redraw the buttons
   tft.fillRect(0, 41, screenWidth, 198, ILI9341_BLACK);
+  wasScreenCleared = true;
+}
+
+void Display::blackScreen(){
+  tft.fillRect(0, 0, screenWidth, screenHeight, ILI9341_BLACK);
   wasScreenCleared = true;
 }

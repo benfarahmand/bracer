@@ -239,7 +239,7 @@ void Sensors::initBME(){
   bme.setIIRFilterSize(BME680_FILTER_SIZE_3);
   bme.setGasHeater(320, 150); // 320*C for 150 ms
 
-  getGasReference();
+  // getGasReference();
 }
 
 float Sensors::getVOC(){
@@ -274,17 +274,19 @@ void Sensors::readBME(){
   }
   
   //calculate gas score
-  gas_score = (0.75 / (gas_upper_limit - gas_lower_limit) * gas_reference - (gas_lower_limit * (0.75 / (gas_upper_limit - gas_lower_limit)))) * 100.00;
+  // gas_score = (0.75 / (gas_upper_limit - gas_lower_limit) * gas_reference - (gas_lower_limit * (0.75 / (gas_upper_limit - gas_lower_limit)))) * 100.00;
+  gas_score = (0.75 / (gas_upper_limit - gas_lower_limit) * bme.gas_resistance - (gas_lower_limit * (0.75 / (gas_upper_limit - gas_lower_limit)))) * 100.00;
   if (gas_score > 75) gas_score = 75; // Sometimes gas readings can go outside of expected scale maximum
   if (gas_score <  0) gas_score = 0;  // Sometimes gas readings can go outside of expected scale minimum
 
   //Combine results for the final IAQ index value (0-100% where 100% is good quality air)
   float air_quality_score = humidity_score + gas_score;
   Serial.println(" comprised of " + String(humidity_score) + "% Humidity and " + String(gas_score) + "% Gas");
-  if ((getgasreference_count++) % 5 == 0) getGasReference();
+  // if ((getgasreference_count++) % 5 == 0) getGasReference();
   Serial.println(CalculateIAQ(air_quality_score));
   
-  voc = bme.gas_resistance / 1000.0;
+  voc = air_quality_score;
+  // voc = bme.gas_resistance / 1000.0;
   
   // float rawADC = static_cast<float>(getRawVocAdc());
   // float sensorResistance = ((4095.0 - rawADC) / rawADC);
@@ -318,13 +320,13 @@ String Sensors::calculateIAQ(int score) {
   return IAQ_text;
 }
 
-void Sensors::getGasReference() {
-  // Now run the sensor for a burn-in period, then use combination of relative humidity and gas resistance to estimate indoor air quality as a percentage.
-  int readings = 10;
-  for (int i = 1; i <= readings; i++) { // read gas for 10 x 0.150mS = 1.5secs
-    gas_reference += bme.readGas();
-  }
-  gas_reference = gas_reference / readings;
+// void Sensors::getGasReference() {
+//   // Now run the sensor for a burn-in period, then use combination of relative humidity and gas resistance to estimate indoor air quality as a percentage.
+//   int readings = 10;
+//   for (int i = 1; i <= readings; i++) { // read gas for 10 x 0.150mS = 1.5secs
+//     gas_reference += bme.readGas();
+//   }
+//   gas_reference = gas_reference / readings;
 }
 
 void Sensors::readSCD41() {

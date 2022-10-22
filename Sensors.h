@@ -42,12 +42,12 @@ class Sensors {
     void turnOnSensors(); //doesn't work
 
     //Atmospheric Sensors
+    String calculateIAQ(int score);
     void initSCD41();
     void initBME();
     void readSCD41();
     void readBME();
-    void getGasReference();
-    String calculateIAQ(int score);
+    // void getGasReference();
     uint16_t getCO2();
     float getTemp();
     float getHumidity();

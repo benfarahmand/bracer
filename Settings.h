@@ -27,6 +27,7 @@ class Settings {
     bool powerModeHigh;
     Sensors* mySensors;
     ESP32Time* rtc;
+    unsigned long startTime;
     
   public:
     
@@ -43,8 +44,9 @@ class Settings {
     void turnWifiOn();
     void turnBluetoothOff();
     void turnBluetoothOn();
-    void viewUpTime();
-    void checkForButtonClicks(uint16_t& x, uint16_t& y);
+    unsigned long getUpTime();
+    
+    bool checkForButtonClicks(uint16_t& x, uint16_t& y);
 
     
 };
