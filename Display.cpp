@@ -60,6 +60,7 @@ void Display::turnOffBacklight() {
   digitalWrite(TFT_LIGHT, LOW);
   blackScreen(); //draw a black rectangle, no need to display text if light is off
   backLightOn = false;
+  wereButtonsDrawn = false;
 }
 
 void Display::turnOnBacklight() {
@@ -145,16 +146,21 @@ void Display::drawHomeScreen(ESP32Time& rtc, Sensors& s, String batteryDetails, 
   tft.setTextSize(textSize);
   tft.print("CO2:");
   tft.print(s.getCO2());
-  tft.println("  ");
+  tft.print("  ");
   tft.print("vOC:");
   tft.print(s.getVOC());
   tft.println("  ");
+  tft.print("IAQ:");
+  tft.print(s.getIAQScore());
+  tft.print("  ");
+  tft.print(s.getIAQString());
+  tft.println("    ");
   tft.print("Pres:");
   tft.print(s.getPressure());
-  tft.println(" hPa  ");
+  tft.println(" hPa ");
   tft.print("Temp:");
   tft.print(s.getTemp());
-  tft.println("  ");
+  tft.println("F  ");
   tft.print("Hum:");
   tft.print(s.getHumidity());
   tft.println("  ");
@@ -178,8 +184,6 @@ void Display::draw(ESP32Time& rtc, Sensors& s, Graph& myGraph, Settings& mySetti
     drawSettingsScreen(mySettings, rtc);
   } else if (screen == 2) {
     drawGraphScreen(myGraph);
-  } else {
-    return;
   }
   drawButtons();
 }

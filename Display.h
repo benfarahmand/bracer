@@ -27,7 +27,7 @@ class Display {
     float screenHeight = 240; //pixel value
     float xConvert, yConvert;
     uint32_t displayTurnOffTimer;
-    int timeToTurnOffDisplay = 30000;//turn off screen after 30 seconds
+    int timeToTurnOffDisplay = 45000;//turn off screen after 45 seconds
   public:
     Adafruit_ILI9341 tft;
     bool backLightOn = true;
@@ -40,7 +40,7 @@ class Display {
     void drawSettingsScreen(Settings& mySettings, ESP32Time& rtc);
     void turnOnBacklight();
     void turnOffBacklight();
-    void checkForButtonClicks(Settings& settingsScreen, Graph& graphScreen);
+    bool checkForButtonClicks(Settings& settingsScreen, Graph& graphScreen);
     void drawButtons();
     void clearScreen();
     void blackScreen();

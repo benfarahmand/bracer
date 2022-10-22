@@ -22,6 +22,8 @@ class Sensors {
     float gas_weighting = 0.75; // so gas effect is 75% of the total air quality score
 
     int   humidity_score, gas_score;
+    float IAQScore;
+    String IAQString;
     float gas_reference = 2500;
     float hum_reference = 40;
     int   getgasreference_count = 0;
@@ -53,6 +55,8 @@ class Sensors {
     float getHumidity();
     float getPressure();
     float getVOC();
+    String getIAQString();
+    int getIAQScore();
     void SCD41LowPowerMode();
     void SCD41HighPowerMode();
 

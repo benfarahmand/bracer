@@ -40,7 +40,7 @@ void setup() {
   startTime = rtc.getEpoch();
   mySensors.init();
   myDisplay.init();
-  mySettings.init(myDisplay.tft, mySensors, rtc, startTime);
+  mySettings.init(myDisplay.tft, mySensors, rtc);
   myGraph.init(startTime);
   timer = millis();
   if(bootCount > 0){
@@ -75,11 +75,13 @@ void loop() {
   // delay(50);
   //check for button clicks
   if(myDisplay.checkForButtonClicks(mySettings, myGraph)){
-    myDisplay.draw(rtc, mySensors, myGraph, mySettings, getBatteryString(), (String) getUpTime(), mySensors.getGPSFix());
+    myDisplay.draw(rtc, mySensors, myGraph, mySettings, getBatteryString(), (String) mySettings.getUpTime(), mySensors.getGPSFix());
   };
   myDisplay.turnOffBacklightAfterSomeTime();
-  //check of analog button press... what should we do with the analog press? maybe go to light sleep
-  analogRead(BUTTON_PIN_BITMASK);
+  //check if analog button press... what should we do with the analog press? maybe go to light sleep
+  if(analogRead(A3)){
+    lightSleep(tft);
+  }
 }
 
 float getBatteryVoltage(){
