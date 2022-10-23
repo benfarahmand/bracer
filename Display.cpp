@@ -94,6 +94,7 @@ bool Display::checkForButtonClicks() {
   uint16_t x, y, z1, z2;
   //due to screen being rotated, the x and y values are flipped
   if (touch.read_touch(&y, &x, &z1, &z2) && (z1 > 50)) {
+    displayTurnOffTimer = millis();
     x = 320 - (int)(((float)x) * xConvert);
     y = (int)(((float)y) * yConvert);
     // Serial.print("x:");
@@ -108,21 +109,21 @@ bool Display::checkForButtonClicks() {
 
       //buttons for switching between screens
       if (homeButton.contains(x, y) && screen != 0) {
-        Serial.println("home screen");
+        // Serial.println("home screen");
         screen = 0;
         wasScreenCleared = false;
         wereButtonsDrawn = false;
         return true;
       }
       if (settingsButton.contains(x, y) && screen != 1) {
-        Serial.println("settings screen");
+        // Serial.println("settings screen");
         screen = 1;
         wasScreenCleared = false;
         wereButtonsDrawn = false;
         return true;
       }
       if (graphButton.contains(x, y) && screen != 2) {
-        Serial.println("graph screen");
+        // Serial.println("graph screen");
         screen = 2;
         wasScreenCleared = false;
         wereButtonsDrawn = false;

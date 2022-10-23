@@ -14,11 +14,14 @@ private:
   // int arrayLength = 20;
   // int arrayStorageCounter;
   // int storageInterval;
+  bool redraw = false;
   int arrayStorageCounter = 0;
-  int storageInterval = 5;                 //record the data once every 30 seconds
+  int startingIndex = 0;
+  int storageInterval = 30;                 //record the data once every 30 seconds
   // int arrayLength = 600 / storageInterval;  //i'm thinking  the graph should show the last 10 minutes of data. therefore, formula for # of indexes is (600 seconds / storage interval)    double CO2 [arrayLength];
   // std::unique_ptr<double[]> Humidity;
   uint16_t CO2[arrayLength] = {};
+  int IAQ[arrayLength] = {};
   double Humidity[arrayLength] = {};
   double Temperature[arrayLength] = {};
   double Battery[arrayLength] = {};
@@ -39,6 +42,8 @@ public:
   void setData(unsigned long upt, unsigned long epochT);//, uint16_t carbon_dioxide, double hum, double temp, double lati, double longi, double bat);
   void saveData();
   bool checkForButtonClicks(uint16_t& x, uint16_t& y);
+  void scrollGraph();
+  void displayValuesAtPoint();
 };
 
 #endif
