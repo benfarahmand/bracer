@@ -33,14 +33,18 @@ class Display {
     bool backLightOn = true;
     
     Display();
-    void init();
-    void draw(ESP32Time& rtc, Sensors& s, Graph& myGraph, Settings& mySettings, String batteryDetails, String upTime, String gpsFix);
-    void drawHomeScreen(ESP32Time& rtc, Sensors& s, String batteryDetails, String upTime, String gpsFix);
-    void drawGraphScreen(Graph& myGraph);
-    void drawSettingsScreen(Settings& mySettings, ESP32Time& rtc);
+    Graph* myGraph;
+    ESP32Time* rtc;
+    Sensors* s;
+    Settings* mySettings;
+    void init(ESP32Time& _rtc, Sensors& _s, Settings& _mySettings, Graph& _myGraph);
+    void draw();
+    void drawHomeScreen();
+    void drawGraphScreen();
+    void drawSettingsScreen();
     void turnOnBacklight();
     void turnOffBacklight();
-    bool checkForButtonClicks(Settings& settingsScreen, Graph& graphScreen);
+    bool checkForButtonClicks();
     void drawButtons();
     void clearScreen();
     void blackScreen();

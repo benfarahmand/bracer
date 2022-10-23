@@ -10,10 +10,6 @@
 //for tracking how many times the ESP32 has woken up
 RTC_DATA_ATTR int bootCount = 0;
 
-//variables for battery readings
-const int MAX_ANALOG_VAL = 4095; //for battery measurement
-const float MAX_BATTERY_VOLTAGE = 4.2; // Max LiPoly voltage of a 3.7 battery is 4.2
-
 //variables for sleep modes
 //#define uS_TO_S_FACTOR 1000000  /* Conversion factor for micro seconds to seconds */
 //#define TIME_TO_SLEEP  5        /* Time ESP32 will go to sleep (in seconds) */
@@ -39,9 +35,9 @@ void setup() {
   rtc.setTime(30, 24, 15, 21, 8, 2022);//temporary values. will update it later via GPS module
   startTime = rtc.getEpoch();
   mySensors.init();
-  myDisplay.init();
   mySettings.init(myDisplay.tft, mySensors, rtc);
-  myGraph.init(startTime);
+  myGraph.init(myDisplay.tft, mySensors, startTime);
+  myDisplay.init(rtc, mySensors, mySettings, myGraph);
   timer = millis();
   if(bootCount > 0){
     
@@ -64,18 +60,24 @@ void loop() {
     mySensors.readBME();
 
     if(myDisplay.backLightOn) {
-      myDisplay.draw(rtc, mySensors, myGraph, mySettings, getBatteryString(), (String) mySettings.getUpTime(), mySensors.getGPSFix());
+      myDisplay.draw();
     }
     //if more than some seconds have passed, log the data
     //unsigned long upt, unsigned long epochT, double carbon_dioxide, double hum, double temp, double lati, double longi, double bat
     //before setting the data, we might need to wait for the GPS to have a fix on the latitude and longitude, or do we not worry about the gps fix?
-    myGraph.setData(mySettings.getUpTime(), rtc.getEpoch(), mySensors.getCO2(), mySensors.getHumidity(), mySensors.getTemp(), mySensors.getLatitude(), mySensors.getLongitude(), getBatteryVoltage());
+    myGraph.setData(mySettings.getUpTime(), rtc.getEpoch());
+                    // mySensors.getCO2(), 
+                    // mySensors.getHumidity(), 
+                    // mySensors.getTemp(), 
+                    // mySensors.getLatitude(), 
+                    // mySensors.getLongitude(), 
+                    // mySensors.getBatteryVoltage());
   }
 
   // delay(50);
   //check for button clicks
-  if(myDisplay.checkForButtonClicks(mySettings, myGraph)){
-    myDisplay.draw(rtc, mySensors, myGraph, mySettings, getBatteryString(), (String) mySettings.getUpTime(), mySensors.getGPSFix());
+  if(myDisplay.checkForButtonClicks()){
+    myDisplay.draw();
   };
   myDisplay.turnOffBacklightAfterSomeTime();
   //check if analog button press... what should we do with the analog press? maybe go to light sleep
@@ -83,31 +85,6 @@ void loop() {
     lightSleep(myDisplay.tft);
   }
 }
-
-float getBatteryVoltage(){
-  // A13 pin is not exposed on Huzzah32 board because it's tied to
-  // measuring voltage level of battery. Note: you must
-  // multiply the analogRead value by 2x to get the true battery
-  // level. See:
-  // https://learn.adafruit.com/adafruit-huzzah32-esp32-feather/esp32-faq
-  int rawValue = analogRead(A13);
-
-  // Reference voltage on ESP32 is 1.1V
-  // https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/peripherals/adc.html#adc-calibration
-  // See also: https://bit.ly/2zFzfMT
-  float voltageLevel = (rawValue / 4095.0) * 2 * 1.1 * 3.3; // calculate voltage level
-  return voltageLevel;
-}
-
-String getBatteryString() {
-  float voltageLevel = getBatteryVoltage();
-  float batteryFraction = voltageLevel / MAX_BATTERY_VOLTAGE;
-
-  return (String)"Bat:" + voltageLevel + ":" + (batteryFraction * 100) + "%   ";
-}
-
-
-
 
 void deepSleep(Adafruit_ILI9341 tft) {
   tft.fillScreen(ILI9341_BLACK);

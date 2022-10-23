@@ -215,6 +215,10 @@ float Sensors::getTemp() {
   return temperature;
 }
 
+float Sensors::getTempBME(){
+  return (bme.temperature * 9.0f / 5.0f + 32.0f);
+}
+
 float Sensors::getHumidity() {
   return humidity;
 }
@@ -351,4 +355,26 @@ void Sensors::readSCD41() {
   } else {
     temperature = temperature * 9.0f / 5.0f + 32.0f;
   }
+}
+
+float Sensors::getBatteryVoltage(){
+  // A13 pin is not exposed on Huzzah32 board because it's tied to
+  // measuring voltage level of battery. Note: you must
+  // multiply the analogRead value by 2x to get the true battery
+  // level. See:
+  // https://learn.adafruit.com/adafruit-huzzah32-esp32-feather/esp32-faq
+  int rawValue = analogRead(A13);
+
+  // Reference voltage on ESP32 is 1.1V
+  // https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/peripherals/adc.html#adc-calibration
+  // See also: https://bit.ly/2zFzfMT
+  float voltageLevel = (rawValue / 4095.0) * 2 * 1.1 * 3.3; // calculate voltage level
+  return voltageLevel;
+}
+
+String Sensors::getBatteryString() {
+  float voltageLevel = getBatteryVoltage();
+  float batteryFraction = voltageLevel / MAX_BATTERY_VOLTAGE;
+
+  return (String)"Bat:" + voltageLevel + ":" + (batteryFraction * 100) + "%   ";
 }

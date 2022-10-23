@@ -21,7 +21,11 @@ class Sensors {
     float hum_weighting = 0.25; // so hum effect is 25% of the total air quality score
     float gas_weighting = 0.75; // so gas effect is 75% of the total air quality score
 
-    String output;
+    String output;//was used for testing some serial output strings
+
+    //variables for battery readings
+    const int MAX_ANALOG_VAL = 4095; //for battery measurement
+    const float MAX_BATTERY_VOLTAGE = 4.2; // Max LiPoly voltage of a 3.7 battery is 4.2
   public:
     Adafruit_GPS GPS;
     SensirionI2CScd4x scd4x;
@@ -45,6 +49,7 @@ class Sensors {
     // void getGasReference();
     uint16_t getCO2();
     float getTemp();
+    float getTempBME();
     float getHumidity();
     float getPressure();
     float getVOC();
@@ -68,6 +73,9 @@ class Sensors {
     void GPSHighPowerMode();
     void GPSLowPowerMode();
 
+    //battery sensor
+    float getBatteryVoltage();
+    String getBatteryString();
 
     //Heart Beat Sensor
     //To Do

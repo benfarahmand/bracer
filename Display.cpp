@@ -22,7 +22,7 @@ Display::Display()
   : tft(TFT_CS, TFT_DC, TFT_MOSI, TFT_CLK, TFT_RST, TFT_MISO),
     settingsButton(), homeButton(), graphButton() {}
 
-void Display::init() {
+void Display::init(ESP32Time& _rtc, Sensors& _s, Settings& _mySettings, Graph& _myGraph) {
   screen = 0;  //0 = home, 1 = settings
   minX = 0;    //380;
   maxX = 3684;
@@ -33,6 +33,11 @@ void Display::init() {
   //  screenHeight = 240; //pixel value
   xConvert = (screenWidth / (maxX - minX));
   yConvert = (screenHeight / (maxY - minY));
+
+  rtc = &_rtc;
+  s = &_s;
+  mySettings = &_mySettings;      
+  myGraph = &_myGraph;
 
   tft.begin();
   tft.setRotation(1);
@@ -85,16 +90,16 @@ void Display::drawButtons() {
   }
 }
 
-bool Display::checkForButtonClicks(Settings& settingsScreen, Graph& graphScreen) {
+bool Display::checkForButtonClicks() {
   uint16_t x, y, z1, z2;
   //due to screen being rotated, the x and y values are flipped
   if (touch.read_touch(&y, &x, &z1, &z2) && (z1 > 50)) {
     x = 320 - (int)(((float)x) * xConvert);
     y = (int)(((float)y) * yConvert);
-    Serial.print("x:");
-    Serial.println(x);
-    Serial.print("y:");
-    Serial.println(y);
+    // Serial.print("x:");
+    // Serial.println(x);
+    // Serial.print("y:");
+    // Serial.println(y);
     //if the backlight is off, then any touch should turn it on
     //eventually it would be nice to have the accelerometer also control the backlight
     if (!backLightOn) {
@@ -126,69 +131,71 @@ bool Display::checkForButtonClicks(Settings& settingsScreen, Graph& graphScreen)
 
       //now check for specific screen buttons
       if (screen == 1) {
-        return settingsScreen.checkForButtonClicks(x, y);
+        return mySettings->checkForButtonClicks(x, y);
       }
 
       if(screen == 2){
-        return graphScreen.checkForButtonClicks(x, y);
+        return myGraph->checkForButtonClicks(x, y);
       }
     }
   }
   return false;
 }
 
-void Display::drawHomeScreen(ESP32Time& rtc, Sensors& s, String batteryDetails, String upTime, String gpsFix) {
+void Display::drawHomeScreen() {
   tft.setCursor(0, 41);
   tft.setTextSize(textSize);
-  tft.println(rtc.getDate());
+  tft.println(rtc->getDate());
   tft.setTextSize(textSize * 2);
-  tft.println(rtc.getTime());
+  tft.println(rtc->getTime());
   tft.setTextSize(textSize);
   tft.print("CO2:");
-  tft.print(s.getCO2());
+  tft.print(s->getCO2());
   tft.print("  ");
   tft.print("vOC:");
-  tft.print(s.getVOC());
+  tft.print(s->getVOC());
   tft.println("  ");
   tft.print("IAQ:");
-  tft.print(s.getIAQScore());
+  tft.print(s->getIAQScore());
   tft.print("  ");
-  tft.print(s.getIAQString());
+  tft.print(s->getIAQString());
   tft.println("    ");
   tft.print("Pres:");
-  tft.print(s.getPressure());
+  tft.print(s->getPressure());
   tft.println(" hPa ");
-  tft.print("Temp:");
-  tft.print(s.getTemp());
-  tft.println("F  ");
+  tft.print("T1:");
+  tft.print(s->getTemp());
+  tft.print("  T2:");
+  tft.print(s->getTempBME());
+  tft.println("   ");
   tft.print("Hum:");
-  tft.print(s.getHumidity());
+  tft.print(s->getHumidity());
   tft.println("  ");
   //can add vOC information here
   //can also add pulse information here
   //should also add some information about whether GPS has a fix or not
-  tft.println(batteryDetails);
+  tft.println(s->getBatteryString());
   tft.print("Up:");
-  tft.println(upTime);
+  tft.println(mySettings->getUpTime());
   tft.print("GPS Fix:");
-  tft.print(gpsFix);
+  tft.print(s->getGPSFix());
 }
 
-void Display::draw(ESP32Time& rtc, Sensors& s, Graph& myGraph, Settings& mySettings, String batteryDetails, String upTime, String gpsFix) {
+void Display::draw() {
   if (!wasScreenCleared) {
     clearScreen();
   }
   if (screen == 0) {
-    drawHomeScreen(rtc, s, batteryDetails, upTime, gpsFix);
+    drawHomeScreen();
   } else if (screen == 1) {
-    drawSettingsScreen(mySettings, rtc);
+    drawSettingsScreen();
   } else if (screen == 2) {
-    drawGraphScreen(myGraph);
+    drawGraphScreen();
   }
   drawButtons();
 }
 
-void Display::drawSettingsScreen(Settings& mySettings, ESP32Time& rtc) {
+void Display::drawSettingsScreen() {
   tft.setCursor(0, 42);
   //settings options: high power mode and low power mode
   //1. high power mode can collect data frequently.
@@ -201,15 +208,15 @@ void Display::drawSettingsScreen(Settings& mySettings, ESP32Time& rtc) {
   //8. show total up time and amount of battery voltage used, maybe this can be
   //9. Sync the time with GPS time
   tft.setTextSize(textSize);
-  tft.println(rtc.getDate());
+  tft.println(rtc->getDate());
   tft.setTextSize(textSize * 2);
-  tft.println(rtc.getTime());
+  tft.println(rtc->getTime());
   tft.setTextSize(textSize);
-  mySettings.draw(tft);
+  mySettings->draw(tft);
 }
 
-void Display::drawGraphScreen(Graph& myGraph) {
-  tft.setCursor(0, 42);
+void Display::drawGraphScreen() {
+  // tft.setCursor(0, 42);
   //the graph display will show time series data and can include the following:
   //1. CO2
   //2. Humidity
@@ -217,7 +224,7 @@ void Display::drawGraphScreen(Graph& myGraph) {
   //4. vOC
   //5. battery usage over time
   //6. pulse over time
-  myGraph.draw(tft);
+  myGraph->draw();
 }
 
 void Display::clearScreen() {
