@@ -80,7 +80,7 @@ void loop() {
   myDisplay.turnOffBacklightAfterSomeTime();
   //check if analog button press... what should we do with the analog press? maybe go to light sleep
   if(analogRead(A3)){
-    lightSleep(tft);
+    lightSleep(myDisplay.tft);
   }
 }
 

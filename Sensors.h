@@ -5,7 +5,7 @@
 #include <Wire.h>
 #include <SensirionI2CScd4x.h>
 #include <Adafruit_GPS.h>
-#include <Adafruit_BME680.h>
+#include <bsec.h>
 
 class Sensors {
   private:
@@ -21,19 +21,12 @@ class Sensors {
     float hum_weighting = 0.25; // so hum effect is 25% of the total air quality score
     float gas_weighting = 0.75; // so gas effect is 75% of the total air quality score
 
-    int   humidity_score, gas_score;
-    float IAQScore;
-    String IAQString;
-    float gas_reference = 2500;
-    float hum_reference = 40;
-    int   getgasreference_count = 0;
-    int   gas_lower_limit = 10000;  // Bad air quality limit
-    int   gas_upper_limit = 300000; // Good air quality limit
+    String output;
   public:
     Adafruit_GPS GPS;
     SensirionI2CScd4x scd4x;
-    Adafruit_BME680 bme; // I2C
-    //    uint32_t timer;
+    Bsec bme; // I2C
+
     Sensors();
 
     //general functions
@@ -55,6 +48,7 @@ class Sensors {
     float getHumidity();
     float getPressure();
     float getVOC();
+    void checkIaqSensorStatus(void);
     String getIAQString();
     int getIAQScore();
     void SCD41LowPowerMode();

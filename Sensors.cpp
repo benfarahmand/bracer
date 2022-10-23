@@ -2,7 +2,7 @@
 #include <SensirionI2CScd4x.h>
 #include <Adafruit_GPS.h>
 #include <Wire.h>
-#include <Adafruit_BME680.h>
+#include <bsec.h>
 
 //scd41 code: https://github.com/Sensirion/arduino-i2c-scd4x/blob/master/src/SensirionI2CScd4x.cpp
 //GPS code: https://github.com/adafruit/Adafruit_GPS/blob/master/src/Adafruit_GPS.cpp
@@ -222,24 +222,34 @@ float Sensors::getHumidity() {
 //https://github.com/G6EJD/BME680-Example/blob/master/ESP32_bme680_CC_demo_03.ino
 //datasheet: https://cdn-shop.adafruit.com/product-files/3660/BME680.pdf
 void Sensors::initBME() {
-  if (!bme.begin()) {
-    // Serial.println("Could not find a valid BME680 sensor, check wiring!");
-    while (1)
-      ;
-  }
+  bme.begin(BME680_I2C_ADDR_SECONDARY, Wire);
+  // output = "\nBSEC library version " + String(bme.version.major) + "." + String(bme.version.minor) + "." + String(bme.version.major_bugfix) + "." + String(bme.version.minor_bugfix);
+  // Serial.println(output);
+  checkIaqSensorStatus();
 
-  // Set up oversampling and filter initialization
-  bme.setTemperatureOversampling(BME680_OS_8X);
-  bme.setHumidityOversampling(BME680_OS_2X);
-  bme.setPressureOversampling(BME680_OS_4X);
-  bme.setIIRFilterSize(BME680_FILTER_SIZE_3);
-  bme.setGasHeater(320, 150);  // 320*C for 150 ms
+  bsec_virtual_sensor_t sensorList[10] = {
+    BSEC_OUTPUT_RAW_TEMPERATURE,
+    BSEC_OUTPUT_RAW_PRESSURE,
+    BSEC_OUTPUT_RAW_HUMIDITY,
+    BSEC_OUTPUT_RAW_GAS,
+    BSEC_OUTPUT_IAQ,
+    BSEC_OUTPUT_STATIC_IAQ,
+    BSEC_OUTPUT_CO2_EQUIVALENT,
+    BSEC_OUTPUT_BREATH_VOC_EQUIVALENT,
+    BSEC_OUTPUT_SENSOR_HEAT_COMPENSATED_TEMPERATURE,
+    BSEC_OUTPUT_SENSOR_HEAT_COMPENSATED_HUMIDITY,
+  };
 
-  // getGasReference();
+  bme.updateSubscription(sensorList, 10, BSEC_SAMPLE_RATE_LP);
+  checkIaqSensorStatus();
+
+  // Print the header
+  // output = "Timestamp [ms], raw temperature [°C], pressure [hPa], raw relative humidity [%], gas [Ohm], IAQ, IAQ accuracy, temperature [°C], relative humidity [%], Static IAQ, CO2 equivalent, breath VOC equivalent";
+  // Serial.println(output);
 }
 
 float Sensors::getVOC() {
-  return voc;
+  return bme.gasResistance / 1000.0;
 }
 
 float Sensors::getPressure() {
@@ -252,63 +262,61 @@ float Sensors::getPressure() {
 
 
 void Sensors::readBME() {
-  if (!bme.performReading()) {
-    // Serial.println("Failed to perform reading :(");
-    return;
+  // unsigned long time_trigger = millis();
+  if (bme.run()) { // If new data is available
+    // output = String(time_trigger);
+    // output += ", " + String(bme.rawTemperature);
+    // output += ", " + String(bme.pressure);
+    // output += ", " + String(bme.rawHumidity);
+    // output += ", " + String(bme.gasResistance);
+    // output += ", " + String(bme.iaq);
+    // output += ", " + String(bme.iaqAccuracy);
+    // output += ", " + String(bme.temperature);
+    // output += ", " + String(bme.humidity);
+    // output += ", " + String(bme.staticIaq);
+    // output += ", " + String(bme.co2Equivalent);
+    // output += ", " + String(bme.breathVocEquivalent);
+    // Serial.println(output);
+  } else {
+    checkIaqSensorStatus();
   }
+}
 
-  //calculate humidity score
-  float current_humidity = bme.humidity;
-  if (current_humidity >= 38 && current_humidity <= 42)  // Humidity +/-5% around optimum
-    humidity_score = 0.25 * 100;
-  else {  // Humidity is sub-optimal
-    if (current_humidity < 38)
-      humidity_score = 0.25 / hum_reference * current_humidity * 100;
-    else {
-      humidity_score = ((-0.25 / (100 - hum_reference) * current_humidity) + 0.416666) * 100;
+// Helper function definitions
+void Sensors::checkIaqSensorStatus(void)
+{
+  if (bme.status != BSEC_OK) {
+    if (bme.status < BSEC_OK) {
+      output = "BSEC error code : " + String(bme.status);
+      Serial.println(output);
+      // for (;;)
+      //   errLeds(); /* Halt in case of failure */
+    } else {
+      output = "BSEC warning code : " + String(bme.status);
+      Serial.println(output);
     }
   }
 
-  //maybe reference the following for IAQ: https://github.com/thstielow/raspi-bme680-iaq
-  //calculate gas score
-  // gas_score = (0.75 / (gas_upper_limit - gas_lower_limit) * gas_reference - (gas_lower_limit * (0.75 / (gas_upper_limit - gas_lower_limit)))) * 100.00;
-  gas_score = (0.75 / (gas_upper_limit - gas_lower_limit) * bme.gas_resistance - (gas_lower_limit * (0.75 / (gas_upper_limit - gas_lower_limit)))) * 100.00;
-  if (gas_score > 75) gas_score = 75;  // Sometimes gas readings can go outside of expected scale maximum
-  if (gas_score < 0) gas_score = 0;    // Sometimes gas readings can go outside of expected scale minimum
-
-  //Combine results for the final IAQ index value (0-100% where 100% is good quality air)
-  float air_quality_score = humidity_score + gas_score;
-  IAQScore = air_quality_score;
-  IAQString = calculateIAQ(air_quality_score);
-  // Serial.println(" comprised of " + String(humidity_score) + "% Humidity and " + String(gas_score) + "% Gas");
-  // if ((getgasreference_count++) % 5 == 0) getGasReference();
-  // Serial.println(calculateIAQ(air_quality_score));
-
-  voc = gas_score;
-  // voc = bme.gas_resistance / 1000.0;
-
-  // float rawADC = static_cast<float>(getRawVocAdc());
-  // float sensorResistance = ((4095.0 - rawADC) / rawADC);
-
-  // float r0_clean_air = 100; //value from the datasheet
-  // // float r0_max = 1500;
-
-  // float rs_r0 = log10( sensorResistance / r0_clean_air);
-
-  // //PPM: x = 10 ^ ((y - b) / m)
-
-  // float slope = -0.85;
-  // float b = 0.54;
-  // float ppm = pow(10,((rs_r0-b)/slope));
-
-  // // Serial.print("PPM: ");
-  // // Serial.println(ppm);
-  // voc = ppm;
+  if (bme.bme680Status != BME680_OK) {
+    if (bme.bme680Status < BME680_OK) {
+      output = "BME680 error code : " + String(bme.bme680Status);
+      Serial.println(output);
+      // for (;;)
+      //   errLeds(); /* Halt in case of failure */
+    } else {
+      output = "BME680 warning code : " + String(bme.bme680Status);
+      Serial.println(output);
+    }
+  }
 }
 
-String Sensors::calculateIAQ(int score) {
+int Sensors::getIAQScore() {
+  return bme.iaq;
+}
+
+String Sensors::getIAQString() {
   String IAQ_text = "";  //"air quality is ";
-  score = (100 - score) * 5;
+  int score = bme.iaq;
   if (score >= 301) IAQ_text += "Hazardous";
   else if (score >= 201 && score <= 300) IAQ_text += "Very Unhealthy";
   else if (score >= 176 && score <= 200) IAQ_text += "Unhealthy";
@@ -318,23 +326,6 @@ String Sensors::calculateIAQ(int score) {
   // Serial.print("IAQ Score = " + String(score) + ", ");
   return IAQ_text;
 }
-
-int Sensors::getIAQScore() {
-  return IAQScore;
-}
-
-String Sensors::getIAQString() {
-  return IAQString;
-}
-
-// void Sensors::getGasReference() {
-//   // Now run the sensor for a burn-in period, then use combination of relative humidity and gas resistance to estimate indoor air quality as a percentage.
-//   int readings = 10;
-//   for (int i = 1; i <= readings; i++) { // read gas for 10 x 0.150mS = 1.5secs
-//     gas_reference += bme.readGas();
-//   }
-//   gas_reference = gas_reference / readings;
-// }
 
 void Sensors::readSCD41() {
   uint16_t error;
