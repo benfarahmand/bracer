@@ -27,7 +27,7 @@ class Display {
     float screenHeight = 240; //pixel value
     float xConvert, yConvert;
     uint32_t displayTurnOffTimer;
-    int timeToTurnOffDisplay = 45000;//turn off screen after 45 seconds
+    int timeToTurnOffDisplay = 60000;//turn off screen after 45 seconds
   public:
     Adafruit_ILI9341 tft;
     bool backLightOn = true;

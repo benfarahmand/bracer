@@ -249,6 +249,8 @@ float Sensors::getPressure() {
 //https://github.com/DFRobot/DFRobot_MICS/blob/master/DFRobot_MICS.cpp
 //datasheet: https://www.mouser.com/datasheet/2/18/1084_Datasheet-MiCS-5524-rev-8-1144838.pdf
 //need to figure out how to convert from voltage reading to ppm
+
+
 void Sensors::readBME() {
   if (!bme.performReading()) {
     // Serial.println("Failed to perform reading :(");
@@ -267,6 +269,7 @@ void Sensors::readBME() {
     }
   }
 
+  //maybe reference the following for IAQ: https://github.com/thstielow/raspi-bme680-iaq
   //calculate gas score
   // gas_score = (0.75 / (gas_upper_limit - gas_lower_limit) * gas_reference - (gas_lower_limit * (0.75 / (gas_upper_limit - gas_lower_limit)))) * 100.00;
   gas_score = (0.75 / (gas_upper_limit - gas_lower_limit) * bme.gas_resistance - (gas_lower_limit * (0.75 / (gas_upper_limit - gas_lower_limit)))) * 100.00;
