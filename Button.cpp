@@ -18,7 +18,7 @@
 //  //initButton(Adafruit_GFX *gfx, int16_t x, int16_t y, uint16_t w, uint16_t h, uint16_t outline, uint16_t fill, uint16_t textcolor,char *label, uint8_t textsize)
 Button::Button(){};
 
-void Button::initButton(Adafruit_ILI9341 tft, int16_t _x, int16_t _y, uint16_t _w, uint16_t _h, uint16_t _outline, uint16_t _fill, uint16_t _textcolor,String _text, uint8_t _textsize){
+void Button::initButton(Adafruit_ILI9341 &tft, int16_t _x, int16_t _y, uint16_t _w, uint16_t _h, uint16_t _outline, uint16_t _fill, uint16_t _textcolor,String _text, uint8_t _textsize){
   x=_x;
   y=_y;
   w=_w;
@@ -36,7 +36,7 @@ void Button::initButton(Adafruit_ILI9341 tft, int16_t _x, int16_t _y, uint16_t _
   tft.getTextBounds(text,0,0,&tX,&tY,&tWidth,&tHeight);
 }
 
-void Button::drawButton(Adafruit_ILI9341 tft) {
+void Button::drawButton(Adafruit_ILI9341 &tft) {
   tft.drawRect(x, y, w, h, outline);
   tft.drawRect(x+1, y+1, w-2, h-2, fill);
   tft.setCursor(x+w/2-tWidth/2, y+h/2-tHeight/2);
